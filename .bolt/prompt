@@ -1,0 +1,20 @@
+Stripro is a micro-SaaS web app built with React 18, TypeScript, Tailwind CSS, and Supabase. It provides Stripe-powered businesses (SaaS, agencies, e-commerce) with clear, actionable client profitability analytics.
+The app must always be:
+
+Modern, responsive, and user-friendly
+
+Secure (using Supabase Auth, including Google sign-in)
+
+Consistent in branding (Stripro logo, slogan, and color scheme)
+
+Modular, with a dashboard layout and sidebar navigation
+
+All pages must have clear titles and placeholder sections for future content
+
+Navigation must always work smoothly, with each menu item showing a dedicated page
+
+Use Tailwind CSS for all styling
+
+All features and pages must be accessible and mobile-friendly
+
+Always respect these principles and context in every prompt for this project.
