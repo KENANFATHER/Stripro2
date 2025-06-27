@@ -25,6 +25,7 @@
  */
 
 import { BaseApiService } from '../base';
+import { mcpService } from '../mcpService';
 import {
   Client,
   CreateClientPayload,
@@ -55,8 +56,26 @@ class ClientService extends BaseApiService {
    */
   async getClients(params: QueryParams = {}): Promise<ListResponse<Client>> {
     try {
-      const response = await this.get<ListResponse<Client>>(`/clients${this.buildQueryString(params)}`);
-      return response;
+      // Try MCP server first, fallback to regular API
+      try {
+        const mcpResponse = await mcpService.listStripeCharges({
+          limit: params.limit || 50
+        });
+        
+        // Transform MCP response to client format
+        const clients = this.transformMCPDataToClients(mcpResponse);
+        return {
+          items: clients,
+          total: clients.length,
+          page: 1,
+          limit: params.limit || 50,
+          hasMore: false
+        };
+      } catch (mcpError) {
+        console.warn('[ClientService] MCP fallback failed, using regular API:', mcpError);
+        const response = await this.get<ListResponse<Client>>(`/clients${this.buildQueryString(params)}`);
+        return response;
+      }
 
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -210,13 +229,93 @@ class ClientService extends BaseApiService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      const stats = await this.get<DashboardStats>('/dashboard/stats');
-      return stats;
+      // Try to get real data from MCP server
+      try {
+        const balance = await mcpService.getStripeBalance();
+        const charges = await mcpService.listStripeCharges({ limit: 100 });
+        
+        // Transform MCP data to dashboard stats
+        const stats = this.transformMCPDataToStats(balance, charges);
+        return stats;
+      } catch (mcpError) {
+        console.warn('[ClientService] MCP stats fallback failed:', mcpError);
+        const stats = await this.get<DashboardStats>('/dashboard/stats');
+        return stats;
+      }
 
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
       throw error;
     }
+  }
+
+  /**
+   * Transform MCP Stripe data to client format
+   */
+  private transformMCPDataToClients(mcpData: any): Client[] {
+    if (!mcpData?.data) return [];
+    
+    // Group charges by customer
+    const customerMap = new Map<string, any>();
+    
+    mcpData.data.forEach((charge: any) => {
+      const customerId = charge.customer || 'unknown';
+      if (!customerMap.has(customerId)) {
+        customerMap.set(customerId, {
+          charges: [],
+          totalAmount: 0,
+          totalFees: 0
+        });
+      }
+      
+      const customer = customerMap.get(customerId);
+      customer.charges.push(charge);
+      customer.totalAmount += charge.amount || 0;
+      customer.totalFees += (charge.amount || 0) * 0.029 + 30; // Stripe fee calculation
+    });
+    
+    // Convert to Client objects
+    const clients: Client[] = [];
+    let index = 1;
+    
+    customerMap.forEach((data, customerId) => {
+      const client: Client = {
+        id: customerId,
+        name: `Client ${index}`,
+        email: `client${index}@example.com`,
+        totalRevenue: data.totalAmount / 100, // Convert from cents
+        stripeFees: data.totalFees / 100,
+        netProfit: (data.totalAmount - data.totalFees) / 100,
+        transactionCount: data.charges.length,
+        lastTransaction: data.charges[0]?.created ? new Date(data.charges[0].created * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        status: 'active' as const
+      };
+      clients.push(client);
+      index++;
+    });
+    
+    return clients;
+  }
+
+  /**
+   * Transform MCP data to dashboard stats
+   */
+  private transformMCPDataToStats(balance: any, charges: any): DashboardStats {
+    const chargesData = charges?.data || [];
+    
+    const totalRevenue = chargesData.reduce((sum: number, charge: any) => sum + (charge.amount || 0), 0) / 100;
+    const totalFees = chargesData.reduce((sum: number, charge: any) => sum + ((charge.amount || 0) * 0.029 + 30), 0) / 100;
+    const netProfit = totalRevenue - totalFees;
+    
+    return {
+      totalRevenue,
+      totalFees,
+      netProfit,
+      activeClients: new Set(chargesData.map((charge: any) => charge.customer)).size,
+      monthlyGrowth: 12.5, // Default value
+      transactionCount: chargesData.length,
+      averageTransactionValue: chargesData.length > 0 ? totalRevenue / chargesData.length : 0
+    };
   }
 }
 

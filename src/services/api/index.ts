@@ -31,6 +31,9 @@ export { transactionService } from './rest/transactionService';
 export { GraphQLClient, createGraphQLClient, graphqlClient } from './graphql/client';
 export { userGraphQLService } from './graphql/userQueries';
 
+// ===== MCP SERVICES =====
+export { mcpService } from './mcpService';
+
 // ===== SERVICE FACTORY =====
 
 /**
