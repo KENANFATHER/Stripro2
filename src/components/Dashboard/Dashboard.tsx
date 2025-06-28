@@ -19,17 +19,15 @@
  */
 
 import React from 'react';
-import { DollarSign, TrendingUp, CreditCard, Users, AlertTriangle, Wifi, WifiOff } from 'lucide-react';
+import { DollarSign, TrendingUp, CreditCard, Users, AlertTriangle } from 'lucide-react';
 import StatsCard from './StatsCard';
 import ClientTable from './ClientTable';
 import { useApi } from '../../hooks';
 import { clientService } from '../../services/api';
-import { mcpService } from '../../services/api';
 import { Client, DashboardStats } from '../../types';
 import { fallbackClients, fallbackDashboardStats } from '../../data/dummyData';
 
 const Dashboard: React.FC = () => {
-  const [mcpConnected, setMcpConnected] = React.useState<boolean | null>(null);
   const [profitabilityData, setProfitabilityData] = React.useState<Client[] | null>(null);
   const [profitabilityLoading, setProfitabilityLoading] = React.useState(false);
   const [profitabilityError, setProfitabilityError] = React.useState<string | null>(null);
@@ -50,14 +48,6 @@ const Dashboard: React.FC = () => {
 
   // Fetch data on component mount
   React.useEffect(() => {
-    // Test MCP connection
-    mcpService.testConnection().then(result => {
-      setMcpConnected(result.connected);
-      if (!result.connected) {
-        console.warn('[Dashboard] MCP server not connected:', result.error);
-      }
-    });
-    
     fetchClients(() => clientService.getClients().then(response => response.items));
     fetchStats(() => clientService.getDashboardStats());
     
@@ -162,42 +152,12 @@ const Dashboard: React.FC = () => {
             <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
             <div>
               <p className="text-yellow-800 font-medium">
-                {mcpConnected === false ? 'MCP server disconnected - Using fallback data' : 'Using fallback data'}
+                Using fallback data
               </p>
               <p className="text-yellow-700 text-sm mt-1">
-                {mcpConnected === false 
-                  ? 'Unable to connect to MCP server. Check if ngrok tunnel is active.'
-                  : 'Unable to connect to the API server. Displaying sample data for demonstration.'
-                }
+                Unable to connect to the API server. Displaying sample data for demonstration.
               </p>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* MCP Connection Status */}
-      {mcpConnected !== null && (
-        <div className={`rounded-xl p-4 mb-6 ${
-          mcpConnected 
-            ? 'bg-green-50 border border-green-200' 
-            : 'bg-red-50 border border-red-200'
-        }`}>
-          <div className="flex items-center space-x-2">
-            {mcpConnected ? (
-              <Wifi className="w-5 h-5 text-green-600" />
-            ) : (
-              <WifiOff className="w-5 h-5 text-red-600" />
-            )}
-            <p className={`font-medium ${
-              mcpConnected ? 'text-green-800' : 'text-red-800'
-            }`}>
-              Custom Stripe MCP Server: {mcpConnected ? 'Connected' : 'Disconnected'}
-            </p>
-            {mcpConnected && (
-              <span className="text-green-700 text-sm">
-                (Real Stripe data via custom MCP server)
-              </span>
-            )}
           </div>
         </div>
       )}
