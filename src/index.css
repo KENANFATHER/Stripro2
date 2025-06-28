@@ -29,3 +29,72 @@
 .bolt-badge:hover {
   animation: badgeHover 0.6s ease-in-out;
 }
+
+/* Animated Gradient Background for Landing Page */
+.animated-gradient-bg {
+  background: linear-gradient(
+    45deg,
+    #c08cad,  /* Lilac */
+    #e69c7f,  /* Atomic Tangerine */
+    #ed8074,  /* Coral */
+    #becdb8,  /* Ash Gray/Sage */
+    #ffffff,  /* White */
+    #c08cad,  /* Lilac */
+    #e69c7f,  /* Atomic Tangerine */
+    #ed8074   /* Coral */
+  );
+  background-size: 400% 400%;
+  animation: gradientWave 15s ease-in-out infinite;
+}
+
+@keyframes gradientWave {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 50%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Additional animation for horizontal wave effect */
+.animated-gradient-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.1),
+    transparent,
+    rgba(255, 255, 255, 0.05),
+    transparent
+  );
+  background-size: 200% 100%;
+  animation: horizontalWave 8s linear infinite;
+}
+
+@keyframes horizontalWave {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Enhanced shadow utilities */
+.shadow-3xl {
+  box-shadow: 0 35px 60px -12px rgba(0, 0, 0, 0.25);
+}

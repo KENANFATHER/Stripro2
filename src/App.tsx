@@ -31,6 +31,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { Sidebar, NotificationContainer, BoltBadge } from './components';
 import { 
+  LandingPage,
   AuthPage, 
   AuthCallbackPage,
   DashboardPage, 
@@ -110,6 +111,7 @@ const AppContent: React.FC = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/" element={<LandingPage />} />
         <Route path="/auth/callback" element={<AuthCallbackPage />} />
         <Route path="*" element={<AuthPage />} />
       </Routes>
