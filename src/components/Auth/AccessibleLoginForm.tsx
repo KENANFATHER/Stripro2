@@ -375,14 +375,14 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
   return (
     <div className={`w-full ${className}`}>
       {/* Accessibility: ARIA live regions for announcements */}
-      <div 
+      <div
         ref={errorAnnouncementRef}
         aria-live="assertive"
         aria-atomic="true"
         className="sr-only"
         role="status"
       />
-      <div 
+      <div
         ref={successAnnouncementRef}
         aria-live="polite"
         aria-atomic="true"
@@ -393,11 +393,11 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
       {/* Accessibility: Main form with proper semantics and ARIA attributes */}
       <main className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/30 p-5 sm:p-6 lg:p-8 shadow-2xl">
         {/* Form Header */}
-        <header className="text-center mb-5 sm:mb-6">
+        <header className="text-center mb-4 sm:mb-5 lg:mb-6">
           <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-sage-900 mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h2>
-          <p className="text-sage-600 text-sm sm:text-base px-2">
+          <p className="text-sage-600 text-sm sm:text-base">
             {isLogin 
               ? 'Sign in to access your analytics dashboard' 
               : 'Start analyzing your Stripe profitability today'
@@ -407,7 +407,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
 
         {/* Security Notice */}
         <section 
-          className="bg-sage-50 border border-sage-200 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-6"
+          className="bg-sage-50 border border-sage-200 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-4 sm:mb-5 lg:mb-6"
           aria-labelledby="security-notice-heading"
         >
           <div className="flex items-start space-x-3">
@@ -426,7 +426,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
         <form 
           ref={formRef}
           onSubmit={handleSubmit} 
-          className="space-y-4 sm:space-y-5"
+          className="space-y-4 sm:space-y-5 lg:space-y-6"
           noValidate // We handle validation ourselves for better UX
           aria-labelledby="form-heading"
         >
@@ -436,7 +436,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           </h2>
 
           {/* Accessibility: Fieldset for grouping related form controls */}
-          <fieldset className="space-y-4 sm:space-y-6">
+          <fieldset className="space-y-4 sm:space-y-5 lg:space-y-6">
             <legend className="sr-only">
               {isLogin ? 'Login credentials' : 'Account information'}
             </legend>
@@ -648,19 +648,19 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           {/* Accessibility: Enhanced submit button with proper states */}
           <div>
             <button
-            type="submit"
-            disabled={isLoading || isSubmitting || !isFormValid}
-            aria-describedby="submit-button-description"
-              className="w-full py-2.5 sm:py-3 px-4 bg-gradient-coral text-white rounded-lg sm:rounded-xl font-semibold hover:shadow-lg focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base"
+              type="submit"
+              disabled={isLoading || isSubmitting || !isFormValid}
+              aria-describedby="submit-button-description"
+              className="w-full py-2.5 sm:py-3 lg:py-4 px-4 bg-gradient-coral text-white rounded-lg sm:rounded-xl font-semibold hover:shadow-lg focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base min-h-[44px]"
             >
-            {isLoading || isSubmitting ? (
-              <span className="flex items-center justify-center space-x-2">
+              {isLoading || isSubmitting ? (
+                <span className="flex items-center justify-center space-x-2">
                   <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" aria-hidden="true" />
-                <span>{isLogin ? 'Signing in...' : 'Creating account...'}</span>
-              </span>
-            ) : (
-              <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
-            )}
+                  <span>{isLogin ? 'Signing in...' : 'Creating account...'}</span>
+                </span>
+              ) : (
+                <span>{isLogin ? 'Sign In' : 'Create Account'}</span>
+              )}
             </button>
           </div>
           
@@ -670,7 +670,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           </div>
 
           {/* OAuth Divider */}
-          <div className="relative my-4 sm:my-5">
+          <div className="relative my-4 sm:my-5 lg:my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-sage-300" />
             </div>
@@ -691,7 +691,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
         </form>
 
         {/* Accessibility: Enhanced mode toggle with proper semantics */}
-        <div className="mt-5 sm:mt-6 text-center">
+        <div className="mt-4 sm:mt-5 lg:mt-6 text-center">
           <p className="text-sm text-sage-600">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
