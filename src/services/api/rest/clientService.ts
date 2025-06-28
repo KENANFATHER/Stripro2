@@ -276,21 +276,6 @@ class ClientService extends BaseApiService {
     const customers = customersData?.data || [];
     const charges = chargesData?.data || [];
     
-    // Create a map of customers
-    const customerMap = new Map();
-    customers.forEach((customer: any) => {
-      customerMap.set(customer.id, {
-        id: customer.id,
-        name: customer.name || customer.email?.split('@')[0] || 'Unknown Customer',
-        email: customer.email || 'no-email@example.com',
-        created: customer.created,
-        totalRevenue: 0,
-        totalFees: 0,
-        transactionCount: 0,
-        charges: []
-      });
-    });
-    
     // Group charges by customer and calculate totals
     const customerMap = new Map<string, any>();
     
