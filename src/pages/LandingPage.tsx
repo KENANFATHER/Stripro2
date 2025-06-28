@@ -24,7 +24,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Sparkles, TrendingUp, Shield } from 'lucide-react';
+import { ArrowRight, Sparkles, TrendingUp, Shield, Check, Clock, Users, BarChart3 } from 'lucide-react';
 import { LoginPanel } from '../components/Auth';
 
 const LandingPage: React.FC = () => {
@@ -176,7 +176,7 @@ const LandingPage: React.FC = () => {
             </section>
 
             {/* Call to Action */}
-            <section className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8" aria-labelledby="cta-heading">
+            <section className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6 lg:space-x-8 mb-8 sm:mb-12 lg:mb-16" aria-labelledby="cta-heading">
               <h3 id="cta-heading" className="sr-only">Get Started with Stripro</h3>
               
               <button
@@ -184,7 +184,7 @@ const LandingPage: React.FC = () => {
                 className="group relative inline-flex items-center space-x-2 sm:space-x-3 bg-white/95 backdrop-blur-sm text-coral-600 px-6 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-5 rounded-xl sm:rounded-2xl lg:rounded-3xl font-bold text-base sm:text-lg lg:text-xl shadow-2xl border border-white/30 hover:bg-white hover:scale-105 transition-all duration-300 hover:shadow-3xl focus:outline-none focus:ring-4 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent"
                 aria-describedby="cta-description"
               >
-                <span>Get Started Free</span>
+                <span>Get 15-Day Trial</span>
                 <ArrowRight className="w-4 sm:w-5 lg:w-6 h-4 sm:h-5 lg:h-6 group-hover:translate-x-1 transition-transform duration-300" aria-hidden="true" />
               </button>
               
@@ -197,6 +197,95 @@ const LandingPage: React.FC = () => {
                 </p>
               </div>
             </section>
+          </section>
+
+          {/* Pricing Section */}
+          <section className="w-full max-w-4xl mx-auto mb-8 sm:mb-12 lg:mb-16" aria-labelledby="pricing-heading">
+            <h3 id="pricing-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white text-center mb-6 sm:mb-8 lg:mb-12 drop-shadow-2xl">
+              Simple, Transparent Pricing
+            </h3>
+            
+            <div className="flex justify-center">
+              <div className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl lg:rounded-[2rem] p-6 sm:p-8 lg:p-12 border border-white/30 shadow-2xl max-w-md w-full mx-4 hover:scale-105 transition-all duration-300">
+                {/* Trial Badge */}
+                <div className="bg-gradient-to-r from-coral-500 to-tangerine-500 text-white px-4 py-2 rounded-full text-sm font-bold text-center mb-6 shadow-lg">
+                  <Clock className="w-4 h-4 inline mr-2" aria-hidden="true" />
+                  15-Day Free Trial
+                </div>
+                
+                {/* Price */}
+                <div className="text-center mb-6">
+                  <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-sage-900 mb-2">
+                    €15
+                    <span className="text-lg sm:text-xl lg:text-2xl text-sage-600 font-normal">/month</span>
+                  </div>
+                  <p className="text-sage-600 text-sm sm:text-base">
+                    Billed monthly • Cancel anytime
+                  </p>
+                </div>
+                
+                {/* Features */}
+                <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
+                  <div className="flex items-center space-x-3">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sage-800 text-sm sm:text-base">All core features</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sage-800 text-sm sm:text-base">Unlimited projects</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-sage-800 text-sm sm:text-base">Email support</span>
+                  </div>
+                </div>
+                
+                {/* CTA Button */}
+                <button
+                  onClick={handleGetStarted}
+                  className="w-full bg-gradient-to-r from-coral-600 to-tangerine-600 text-white py-3 sm:py-4 px-6 rounded-xl sm:rounded-2xl font-bold text-base sm:text-lg hover:from-coral-700 hover:to-tangerine-700 transition-all duration-300 shadow-lg hover:shadow-xl focus:outline-none focus:ring-4 focus:ring-coral-500/50"
+                >
+                  Get 15-Day Trial
+                </button>
+                
+                <p className="text-center text-sage-600 text-xs sm:text-sm mt-3">
+                  No credit card required • Start immediately
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* Coming Soon Section */}
+          <section className="w-full max-w-4xl mx-auto mb-8 sm:mb-12 lg:mb-16" aria-labelledby="coming-soon-heading">
+            <h3 id="coming-soon-heading" className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white text-center mb-6 sm:mb-8 lg:mb-12 drop-shadow-2xl">
+              Coming Soon
+            </h3>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mx-4">
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl sm:rounded-2xl lg:rounded-3xl p-6 sm:p-8 border border-white/20 text-center">
+                <div className="w-12 sm:w-16 h-12 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <BarChart3 className="w-6 sm:w-8 h-6 sm:h-8 text-white" aria-hidden="true" />
+                </div>
+                <h4 className="text-white font-bold text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3">
+                  Business-type Analytics
+                </h4>
+                <p className="text-white/80 text-sm sm:text-base">
+                  Advanced analytics tailored to your specific business model and industry
+                </p>
+              </div>
+              
+              <div className="bg-white/15 backdrop-blur-sm rounded-xl sm:rounded-2xl lg:rounded-3xl p-6 sm:p-8 border border-white/20 text-center">
+                <div className="w-12 sm:w-16 h-12 sm:h-16 bg-white/20 rounded-xl sm:rounded-2xl flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                  <Users className="w-6 sm:w-8 h-6 sm:h-8 text-white" aria-hidden="true" />
+                </div>
+                <h4 className="text-white font-bold text-lg sm:text-xl lg:text-2xl mb-2 sm:mb-3">
+                  Team Access & Multi-user Support
+                </h4>
+                <p className="text-white/80 text-sm sm:text-base">
+                  Collaborate with your team and manage user permissions across your organization
+                </p>
+              </div>
+            </div>
           </section>
 
           {/* Social Proof Section */}
