@@ -15,3 +15,4 @@ export { default as ReCaptcha } from './ReCaptcha';
 export { default as AccessibleLoginForm } from './AccessibleLoginForm';
 export { default as ForgotPasswordForm } from './ForgotPasswordForm';
 export { default as GoogleSignInButton } from './GoogleSignInButton';
+export { default as LoginPanel } from './LoginPanel';

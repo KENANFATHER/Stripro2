@@ -23,12 +23,23 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Sparkles, TrendingUp, Shield } from 'lucide-react';
+import { LoginPanel } from '../components/Auth';
 
 const LandingPage: React.FC = () => {
   const navigate = useNavigate();
+  const [showLoginPanel, setShowLoginPanel] = React.useState(false);
 
   const handleGetStarted = () => {
-    navigate('/auth');
+    setShowLoginPanel(true);
+  };
+
+  const handleCloseLoginPanel = () => {
+    setShowLoginPanel(false);
+  };
+
+  const handleAuthSuccess = () => {
+    // Navigate to dashboard after successful authentication
+    navigate('/dashboard');
   };
 
   return (
@@ -157,6 +168,13 @@ const LandingPage: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Login Panel Modal */}
+      <LoginPanel
+        isOpen={showLoginPanel}
+        onClose={handleCloseLoginPanel}
+        onAuthSuccess={handleAuthSuccess}
+      />
     </div>
   );
 };
