@@ -21,7 +21,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
-import { AccessibleLoginForm } from './AccessibleLoginForm';
+import AccessibleLoginForm from './AccessibleLoginForm';
 
 interface LoginPanelProps {
   isOpen: boolean;
