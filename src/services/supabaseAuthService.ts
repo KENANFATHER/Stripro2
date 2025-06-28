@@ -486,13 +486,14 @@ class SupabaseAuthService {
         .from('user_security_settings')
         .select('mfa_enabled')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error checking MFA status:', error);
         return false;
       }
 
+      // If no security settings exist for the user, MFA is disabled by default
       return data?.mfa_enabled || false;
     } catch (error) {
       console.error('Error checking MFA status:', error);
