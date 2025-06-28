@@ -288,32 +288,6 @@ const LandingPage: React.FC = () => {
             </div>
           </section>
 
-          {/* Social Proof Section */}
-          <section className="text-center w-full max-w-3xl mx-auto" aria-labelledby="social-proof-heading">
-            <h3 id="social-proof-heading" className="sr-only">Customer Testimonials</h3>
-            
-            <div className="bg-white/15 backdrop-blur-sm rounded-xl sm:rounded-2xl lg:rounded-3xl p-4 sm:p-6 lg:p-8 border border-white/20 mx-4">
-              <div className="flex items-center justify-center space-x-2 mb-3 sm:mb-4 lg:mb-6">
-                <div className="flex -space-x-1 sm:-space-x-2 lg:-space-x-3" role="img" aria-label="Profile pictures of satisfied customers">
-                  <div className="w-6 sm:w-8 lg:w-10 h-6 sm:h-8 lg:h-10 bg-gradient-to-br from-coral-400 to-coral-600 rounded-full border-2 border-white" aria-hidden="true" />
-                  <div className="w-6 sm:w-8 lg:w-10 h-6 sm:h-8 lg:h-10 bg-gradient-to-br from-tangerine-400 to-tangerine-600 rounded-full border-2 border-white" aria-hidden="true" />
-                  <div className="w-6 sm:w-8 lg:w-10 h-6 sm:h-8 lg:h-10 bg-gradient-to-br from-lilac-400 to-lilac-600 rounded-full border-2 border-white" aria-hidden="true" />
-                  <div className="w-6 sm:w-8 lg:w-10 h-6 sm:h-8 lg:h-10 bg-gradient-to-br from-sage-400 to-sage-600 rounded-full border-2 border-white flex items-center justify-center">
-                    <span className="text-white text-xs sm:text-sm lg:text-base font-bold" aria-hidden="true">+</span>
-                  </div>
-                </div>
-                <span className="text-white font-bold text-sm sm:text-base lg:text-lg">500+ Early Users</span>
-              </div>
-              
-              <blockquote className="text-white/90 text-sm sm:text-base lg:text-lg italic mb-2 sm:mb-3 lg:mb-4">
-                "Stripro helped us identify our most profitable clients and increase revenue by 40% in just 3 months"
-              </blockquote>
-              
-              <cite className="text-white/70 text-xs sm:text-sm lg:text-base">
-                — Sarah Chen, CEO at TechFlow Solutions
-              </cite>
-            </div>
-          </section>
         </main>
         
         {/* Login Panel Modal */}
