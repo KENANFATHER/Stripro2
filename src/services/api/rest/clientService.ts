@@ -79,7 +79,7 @@ class ClientService extends BaseApiService {
           items: clients,
           total: clients.length,
           page: 1,
-          limit: params.limit || 50
+          limit: params.limit || 50,
           hasMore: false
         };
       } catch (mcpError) {
