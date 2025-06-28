@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -93,45 +94,45 @@ serve(async (req) => {
       payouts_enabled: accountData.payouts_enabled
     })
 
-    // TODO: Store the connected account information in your database
-    // You would typically save this to a user_stripe_accounts table
-    /*
-    const { data, error: dbError } = await supabase
-      .from('user_stripe_accounts')
-      .upsert({
-        user_id: userId, // You'll need to get this from the state parameter or session
-        stripe_user_id: tokenData.stripe_user_id,
-        access_token: tokenData.access_token,
-        refresh_token: tokenData.refresh_token,
-        account_id: accountData.id,
-        account_email: accountData.email,
-        account_country: accountData.country,
-        charges_enabled: accountData.charges_enabled,
-        payouts_enabled: accountData.payouts_enabled,
-        scope: tokenData.scope,
-        connected_at: new Date().toISOString(),
-      })
-    
-    if (dbError) {
-      console.error('Database error:', dbError)
-      throw new Error('Failed to save account connection')
-    }
-    */
+    // Initialize Supabase client with service role key for admin operations
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') || '',
+      Deno.env.get('SERVICE_ROLE_KEY') || '' // Changed from SUPABASE_ADMIN_KEY
+    )
 
-    // For now, we'll just log the successful connection
-    console.log('Stripe Connect successful! Account connected:', {
-      stripe_user_id: tokenData.stripe_user_id,
-      account_id: accountData.id,
-      email: accountData.email,
-      charges_enabled: accountData.charges_enabled,
-      payouts_enabled: accountData.payouts_enabled
-    })
+    // Extract user_id from the state parameter
+    const userId = state?.split('_')[1]
+
+    if (!userId) {
+      throw new Error('User ID not found in state parameter. Cannot update user metadata.')
+    }
+
+    // Update user_metadata in Supabase auth.users table
+    const { data: updateData, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      userId,
+      {
+        user_metadata: {
+          stripe_connected: true,
+          stripe_account_id: accountData.id,
+          stripe_email: accountData.email,
+          stripe_country: accountData.country,
+          stripe_charges_enabled: accountData.charges_enabled,
+          stripe_payouts_enabled: accountData.payouts_enabled,
+          stripe_connected_at: new Date().toISOString(),
+        },
+      }
+    )
+
+    if (updateError) {
+      console.error('Failed to update user metadata in Supabase:', updateError)
+      throw new Error('Failed to update user connection status in database')
+    }
+    console.log('User metadata updated in Supabase:', updateData)
 
     // Redirect back to the app with success
     const redirectUrl = new URL(`${Deno.env.get('FRONTEND_URL') || 'http://localhost:5173'}/settings`)
     redirectUrl.searchParams.set('stripe_connected', 'true')
     redirectUrl.searchParams.set('stripe_account_id', accountData.id)
-    redirectUrl.searchParams.set('stripe_email', accountData.email || '')
     
     return Response.redirect(redirectUrl.toString(), 302)
 
