@@ -152,6 +152,39 @@ CREATE POLICY "Users can view own security events" ON security_events
 3. Add production URL when deploying
 4. Configure email templates as needed
 
+### 4. Stripe Webhook Configuration
+
+Set up the Stripe webhook Edge Function to receive real-time events:
+
+1. **Deploy the webhook Edge Function:**
+   ```bash
+   supabase functions deploy stripe-webhook
+   ```
+
+2. **Configure Stripe webhook endpoint:**
+   - Go to your [Stripe Dashboard](https://dashboard.stripe.com/webhooks)
+   - Click "Add endpoint"
+   - Set the endpoint URL to: `https://your-project.supabase.co/functions/v1/stripe-webhook`
+   - Select these events to send:
+     - `customer.created`
+     - `customer.updated`
+     - `payment_intent.succeeded`
+     - `charge.refunded`
+   - Copy the webhook signing secret
+
+3. **Set environment variables in Supabase:**
+   ```bash
+   # Set your Stripe secret key
+   supabase secrets set STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+   
+   # Set your webhook signing secret
+   supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+   ```
+
+4. **Test the webhook:**
+   - Use Stripe CLI to forward events: `stripe listen --forward-to https://your-project.supabase.co/functions/v1/stripe-webhook`
+   - Or trigger test events from the Stripe Dashboard
+
 ## Project Structure
 
 ```
@@ -167,7 +200,14 @@ src/
 ├── services/           # API and external services
 ├── types/              # TypeScript type definitions
 ├── utils/              # Utility functions
-└── data/               # Mock data for development
+├── data/               # Mock data for development
+├── supabase/
+│   ├── functions/          # Supabase Edge Functions
+│   │   ├── stripe-connect-callback/  # OAuth callback handler
+│   │   ├── stripe-webhook/           # Webhook event processor
+│   │   └── stripe-profitability/     # Profitability calculator
+│   └── migrations/         # Database migrations
+└── public/                 # Static assets
 ```
 
 ## Security Features
@@ -199,6 +239,54 @@ The application includes demo mode with mock authentication:
 - Use any email and password to sign in
 - All data is mocked for demonstration purposes
 - Replace with actual Supabase integration for production
+
+## Supabase Edge Functions
+
+The project includes three Supabase Edge Functions:
+
+1. **stripe-connect-callback**: Handles Stripe Connect OAuth callbacks
+2. **stripe-webhook**: Processes Stripe webhook events in real-time
+3. **stripe-profitability**: Calculates client profitability from Stripe data
+
+### Deploying Edge Functions
+
+```bash
+# Deploy all functions
+supabase functions deploy
+
+# Deploy specific functions
+supabase functions deploy stripe-connect-callback
+supabase functions deploy stripe-webhook
+supabase functions deploy stripe-profitability
+```
+
+### Environment Variables
+
+Set these secrets in your Supabase project:
+
+```bash
+# Required for all Edge Functions
+supabase secrets set STRIPE_SECRET_KEY=sk_test_your_secret_key_here
+supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
+
+# Required for OAuth callback
+supabase secrets set FRONTEND_URL=http://localhost:5173
+```
+
+## Production Setup
+
+### Stripe Integration
+
+1. **Set up API keys** in the Settings page
+2. **Configure webhook endpoint** in your Stripe Dashboard (see Webhook Configuration above)
+3. **Test the integration** with Stripe's test mode
+
+### Data Flow
+
+1. Stripe events trigger webhooks to the `stripe-webhook` Edge Function
+2. Edge Functions process events and update Supabase tables
+3. Dashboard displays real-time profitability calculations
+4. Users can analyze client performance and optimize pricing
 
 ## Deployment
 
