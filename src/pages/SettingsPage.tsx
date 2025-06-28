@@ -382,14 +382,14 @@ const SettingsPage: React.FC = () => {
                         <p className={`font-medium ${
                           mcpStatus?.connected ? 'text-green-900' : 'text-red-900'
                         }`}>
-                          MCP Server Status
+                          Custom Stripe MCP Server Status
                         </p>
                         <p className={`text-sm ${
                           mcpStatus?.connected ? 'text-green-700' : 'text-red-700'
                         }`}>
                           {mcpStatus?.connected 
-                            ? 'Connected to ngrok tunnel - Real Stripe data available'
-                            : `Disconnected - ${mcpStatus?.error || 'Check ngrok tunnel'}`
+                            ? 'Connected to custom MCP server - Real Stripe data available'
+                            : `Disconnected - ${mcpStatus?.error || 'Check MCP server connection'}`
                           }
                         </p>
                       </div>
@@ -404,7 +404,10 @@ const SettingsPage: React.FC = () => {
                   {mcpStatus?.connected && (
                     <div className="mt-3 pt-3 border-t border-green-200">
                       <p className="text-sm text-green-700">
-                        <strong>ngrok URL:</strong> https://1b42-2003-d8-b714-b682-6d5d-e6d3-14a6-5275.ngrok-free.app
+                        <strong>MCP Server URL:</strong> https://3ae9-2003-d8-b714-b6d1-84b8-1be2-7129-415f.ngrok-free.app
+                      </p>
+                      <p className="text-sm text-green-700 mt-1">
+                        <strong>Available Operations:</strong> Create customers, charges, payment intents, list data, get balance
                       </p>
                     </div>
                   )}

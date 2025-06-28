@@ -169,11 +169,11 @@ const Dashboard: React.FC = () => {
             <p className={`font-medium ${
               mcpConnected ? 'text-green-800' : 'text-red-800'
             }`}>
-              MCP Server: {mcpConnected ? 'Connected' : 'Disconnected'}
+              Custom Stripe MCP Server: {mcpConnected ? 'Connected' : 'Disconnected'}
             </p>
             {mcpConnected && (
               <span className="text-green-700 text-sm">
-                (Real Stripe data via ngrok)
+                (Real Stripe data via custom MCP server)
               </span>
             )}
           </div>

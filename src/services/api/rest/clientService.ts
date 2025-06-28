@@ -56,23 +56,34 @@ class ClientService extends BaseApiService {
    */
   async getClients(params: QueryParams = {}): Promise<ListResponse<Client>> {
     try {
-      // Try MCP server first, fallback to regular API
+      // Try custom Stripe MCP server first, fallback to regular API
       try {
-        const mcpResponse = await mcpService.listStripeCharges({
-          limit: params.limit || 50
-        });
+        console.log('[ClientService] Attempting to fetch data from custom MCP server...');
+        
+        // Get both customers and charges from the custom MCP server
+        const [customersResponse, chargesResponse] = await Promise.all([
+          mcpService.listStripeCustomers({
+            limit: params.limit || 50
+          }),
+          mcpService.listStripeCharges({
+            limit: params.limit || 100
+          })
+        ]);
+        
+        console.log('[ClientService] MCP server responses:', { customersResponse, chargesResponse });
         
         // Transform MCP response to client format
-        const clients = this.transformMCPDataToClients(mcpResponse);
+        const clients = this.transformMCPDataToClients(customersResponse, chargesResponse);
+        
         return {
           items: clients,
           total: clients.length,
           page: 1,
-          limit: params.limit || 50,
+          limit: params.limit || 50
           hasMore: false
         };
       } catch (mcpError) {
-        console.warn('[ClientService] MCP fallback failed, using regular API:', mcpError);
+        console.warn('[ClientService] Custom MCP server failed, using fallback data:', mcpError);
         const response = await this.get<ListResponse<Client>>(`/clients${this.buildQueryString(params)}`);
         return response;
       }
@@ -229,16 +240,21 @@ class ClientService extends BaseApiService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      // Try to get real data from MCP server
+      // Try to get real data from custom MCP server
       try {
-        const balance = await mcpService.getStripeBalance();
-        const charges = await mcpService.listStripeCharges({ limit: 100 });
+        console.log('[ClientService] Fetching dashboard stats from custom MCP server...');
+        
+        const [balance, charges, customers] = await Promise.all([
+          mcpService.getStripeBalance(),
+          mcpService.listStripeCharges({ limit: 100 }),
+          mcpService.listStripeCustomers({ limit: 100 })
+        ]);
         
         // Transform MCP data to dashboard stats
-        const stats = this.transformMCPDataToStats(balance, charges);
+        const stats = this.transformMCPDataToStats(balance, charges, customers);
         return stats;
       } catch (mcpError) {
-        console.warn('[ClientService] MCP stats fallback failed:', mcpError);
+        console.warn('[ClientService] Custom MCP server stats failed, using fallback:', mcpError);
         const stats = await this.get<DashboardStats>('/dashboard/stats');
         return stats;
       }
@@ -250,18 +266,41 @@ class ClientService extends BaseApiService {
   }
 
   /**
-   * Transform MCP Stripe data to client format
+   * Transform custom MCP Stripe data to client format
    */
-  private transformMCPDataToClients(mcpData: any): Client[] {
-    if (!mcpData?.data) return [];
+  private transformMCPDataToClients(customersData: any, chargesData: any): Client[] {
+    console.log('[ClientService] Transforming MCP data to clients:', { customersData, chargesData });
     
-    // Group charges by customer
+    if (!customersData?.data && !chargesData?.data) return [];
+    
+    const customers = customersData?.data || [];
+    const charges = chargesData?.data || [];
+    
+    // Create a map of customers
+    const customerMap = new Map();
+    customers.forEach((customer: any) => {
+      customerMap.set(customer.id, {
+        id: customer.id,
+        name: customer.name || customer.email?.split('@')[0] || 'Unknown Customer',
+        email: customer.email || 'no-email@example.com',
+        created: customer.created,
+        totalRevenue: 0,
+        totalFees: 0,
+        transactionCount: 0,
+        charges: []
+      });
+    });
+    
+    // Group charges by customer and calculate totals
     const customerMap = new Map<string, any>();
     
-    mcpData.data.forEach((charge: any) => {
+    charges.forEach((charge: any) => {
       const customerId = charge.customer || 'unknown';
       if (!customerMap.has(customerId)) {
         customerMap.set(customerId, {
+          id: customerId,
+          name: `Customer ${customerId.substring(0, 8)}`,
+          email: `customer-${customerId.substring(0, 8)}@example.com`,
           charges: [],
           totalAmount: 0,
           totalFees: 0
@@ -274,20 +313,22 @@ class ClientService extends BaseApiService {
       customer.totalFees += (charge.amount || 0) * 0.029 + 30; // Stripe fee calculation
     });
     
-    // Convert to Client objects
+    // Convert to Client objects with enhanced data
     const clients: Client[] = [];
     let index = 1;
     
-    customerMap.forEach((data, customerId) => {
+    customerMap.forEach((customerData, customerId) => {
       const client: Client = {
-        id: customerId,
-        name: `Client ${index}`,
-        email: `client${index}@example.com`,
-        totalRevenue: data.totalAmount / 100, // Convert from cents
-        stripeFees: data.totalFees / 100,
-        netProfit: (data.totalAmount - data.totalFees) / 100,
-        transactionCount: data.charges.length,
-        lastTransaction: data.charges[0]?.created ? new Date(data.charges[0].created * 1000).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        id: customerData.id,
+        name: customerData.name,
+        email: customerData.email,
+        totalRevenue: customerData.totalAmount / 100, // Convert from cents
+        stripeFees: customerData.totalFees / 100,
+        netProfit: (customerData.totalAmount - customerData.totalFees) / 100,
+        transactionCount: customerData.charges.length,
+        lastTransaction: customerData.charges[0]?.created ? 
+          new Date(customerData.charges[0].created * 1000).toISOString().split('T')[0] : 
+          new Date().toISOString().split('T')[0],
         status: 'active' as const
       };
       clients.push(client);
@@ -298,20 +339,24 @@ class ClientService extends BaseApiService {
   }
 
   /**
-   * Transform MCP data to dashboard stats
+   * Transform custom MCP data to dashboard stats
    */
-  private transformMCPDataToStats(balance: any, charges: any): DashboardStats {
+  private transformMCPDataToStats(balance: any, charges: any, customers: any): DashboardStats {
+    console.log('[ClientService] Transforming MCP data to stats:', { balance, charges, customers });
+    
     const chargesData = charges?.data || [];
+    const customersData = customers?.data || [];
     
     const totalRevenue = chargesData.reduce((sum: number, charge: any) => sum + (charge.amount || 0), 0) / 100;
     const totalFees = chargesData.reduce((sum: number, charge: any) => sum + ((charge.amount || 0) * 0.029 + 30), 0) / 100;
     const netProfit = totalRevenue - totalFees;
+    const activeCustomers = customersData.length;
     
     return {
       totalRevenue,
       totalFees,
       netProfit,
-      activeClients: new Set(chargesData.map((charge: any) => charge.customer)).size,
+      activeClients: activeCustomers,
       monthlyGrowth: 12.5, // Default value
       transactionCount: chargesData.length,
       averageTransactionValue: chargesData.length > 0 ? totalRevenue / chargesData.length : 0
