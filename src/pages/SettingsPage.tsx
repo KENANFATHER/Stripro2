@@ -28,7 +28,6 @@ import { CreditCard, User, Bell, Shield, Save, Eye, EyeOff, CheckCircle, AlertTr
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { stripeService } from '../services/stripe';
-import { mcpService } from '../services/api';
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
@@ -37,7 +36,6 @@ const SettingsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingStripe, setIsTestingStripe] = useState(false);
-  const [mcpStatus, setMcpStatus] = useState<{ connected: boolean; error?: string } | null>(null);
 
   // Profile data state
   const [profileData, setProfileData] = useState({
@@ -78,9 +76,6 @@ const SettingsPage: React.FC = () => {
       publishableKey: keys.publishableKey || '',
       connectClientId: keys.connectClientId || ''
     }));
-    
-    // Test MCP connection
-    mcpService.testConnection().then(setMcpStatus);
   }, []);
 
   const handleSave = async () => {
@@ -360,58 +355,6 @@ const SettingsPage: React.FC = () => {
             {activeSection === 'stripe' && (
               <div>
                 <h3 className="text-xl font-bold text-sage-900 mb-6">Stripe Integration</h3>
-                
-                {/* MCP Server Status */}
-                <div className={`border rounded-xl p-4 mb-6 ${
-                  mcpStatus?.connected 
-                    ? 'bg-green-50 border-green-200' 
-                    : 'bg-red-50 border-red-200'
-                }`}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        mcpStatus?.connected ? 'bg-green-100' : 'bg-red-100'
-                      }`}>
-                        {mcpStatus?.connected ? (
-                          <CheckCircle className="w-5 h-5 text-green-600" />
-                        ) : (
-                          <AlertTriangle className="w-5 h-5 text-red-600" />
-                        )}
-                      </div>
-                      <div>
-                        <p className={`font-medium ${
-                          mcpStatus?.connected ? 'text-green-900' : 'text-red-900'
-                        }`}>
-                          Custom Stripe MCP Server Status
-                        </p>
-                        <p className={`text-sm ${
-                          mcpStatus?.connected ? 'text-green-700' : 'text-red-700'
-                        }`}>
-                          {mcpStatus?.connected 
-                            ? 'Connected to custom MCP server - Real Stripe data available'
-                            : `Disconnected - ${mcpStatus?.error || 'Check MCP server connection'}`
-                          }
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => mcpService.testConnection().then(setMcpStatus)}
-                      className="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Test Connection
-                    </button>
-                  </div>
-                  {mcpStatus?.connected && (
-                    <div className="mt-3 pt-3 border-t border-green-200">
-                      <p className="text-sm text-green-700">
-                        <strong>MCP Server URL:</strong> https://3ae9-2003-d8-b714-b6d1-84b8-1be2-7129-415f.ngrok-free.app
-                      </p>
-                      <p className="text-sm text-green-700 mt-1">
-                        <strong>Available Operations:</strong> Create customers, charges, payment intents, list data, get balance
-                      </p>
-                    </div>
-                  )}
-                </div>
                 
                 {/* Current Status */}
                 <div className="bg-sage-50 border border-sage-200 rounded-xl p-4 mb-6">

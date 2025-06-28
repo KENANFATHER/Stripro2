@@ -8,7 +8,7 @@
  * Features:
  * - Revenue and profit metrics display
  * - Client profitability table
- * - Real-time data updates
+ * - Real-time data updates via Supabase Edge Functions
  * - Responsive design for all devices
  * - Mobile-optimized layout
  * 
@@ -60,9 +60,9 @@ const Dashboard: React.FC = () => {
         setProfitabilityData(data);
         console.log('[Dashboard] Edge Function profitability data loaded:', data);
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Failed to load profitability data from Edge Function.';
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch profitability data from Edge Function';
         setProfitabilityError(errorMessage);
-        console.error('[Dashboard] Edge Function error:', err);
+        console.error('[Dashboard] Edge Function error:', errorMessage);
       } finally {
         setProfitabilityLoading(false);
       }

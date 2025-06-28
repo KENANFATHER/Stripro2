@@ -32,7 +32,6 @@ export { GraphQLClient, createGraphQLClient, graphqlClient } from './graphql/cli
 export { userGraphQLService } from './graphql/userQueries';
 
 // ===== MCP SERVICES =====
-export { mcpService } from './mcpService';
 
 // ===== SERVICE FACTORY =====
 

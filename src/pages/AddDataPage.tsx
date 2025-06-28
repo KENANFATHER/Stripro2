@@ -26,7 +26,6 @@
 import React, { useState } from 'react';
 import { Plus, Save, X, Calculator } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
-import { mcpService } from '../services/api';
 
 interface FormData {
   clientName: string;
@@ -62,56 +61,15 @@ const AddDataPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Try to create a real Stripe charge via MCP server
-      try {
-        console.log('[AddDataPage] Creating Stripe charge via MCP server...');
-        
-        // First, create or get customer
-        const customerData = {
-          email: formData.clientEmail,
-          name: formData.clientName,
-          description: `Customer for ${formData.clientName}`
-        };
-        
-        // Create customer via MCP server
-        const customer = await mcpService.createStripeCustomer(customerData);
-        console.log('[AddDataPage] Customer created:', customer);
-        
-        // Create charge via MCP server
-        const chargeData = {
-          amount: Math.round(parseFloat(formData.amount) * 100), // Convert to cents
-          currency: 'usd',
-          customer: customer.id,
-          description: formData.description || `Payment from ${formData.clientName}`,
-          source: 'tok_visa', // Test token - in production, use real payment method
-          metadata: {
-            client_name: formData.clientName,
-            transaction_date: formData.date,
-            source: 'stripro_dashboard'
-          }
-        };
-        
-        const charge = await mcpService.createStripeCharge(chargeData);
-        console.log('[AddDataPage] Charge created:', charge);
-        
-        showNotification(
-          'success',
-          'Real Stripe Transaction Created',
-          `Successfully created Stripe charge ${charge.id} for ${formData.clientName}`
-        );
-        
-      } catch (mcpError) {
-        console.warn('[AddDataPage] MCP server failed, using fallback:', mcpError);
-        
-        // Fallback to mock transaction
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        showNotification(
-          'success',
-          'Transaction Added (Demo)',
-          `Successfully added demo transaction for ${formData.clientName}`
-        );
-      }
+      // Simulate API call for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Show success notification
+      showNotification(
+        'success',
+        'Demo Transaction Added',
+        `Successfully added demo transaction for ${formData.clientName}`
+      );
       
       // Reset form
       setFormData({
