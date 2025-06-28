@@ -234,6 +234,85 @@ class ClientService extends BaseApiService {
   }
 
   /**
+   * Get client profitability data from Supabase Edge Function
+   * 
+   * @returns Promise with profitability data from Edge Function
+   */
+  async getProfitabilityFromEdgeFunction(): Promise<Client[]> {
+    try {
+      console.log('[ClientService] Fetching profitability data from Supabase Edge Function...');
+      
+      const edgeFunctionUrl = 'https://kcpgaavzznnvrnnvhdvo.supabase.co/functions/v1/stripe-profitability';
+
+      const response = await fetch(edgeFunctionUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          // If your Edge Function requires authentication (e.g., a JWT),
+          // you would add an 'Authorization' header here.
+          // For now, assuming it's publicly accessible as per the plan's --no-verify-jwt flag.
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { error: errorText || `HTTP ${response.status}: ${response.statusText}` };
+        }
+        throw new Error(errorData.error || 'Failed to fetch profitability data from Edge Function');
+      }
+
+      const data = await response.json();
+      console.log('[ClientService] Edge Function response:', data);
+      
+      // Transform the Edge Function response to Client[] format if needed
+      const clients = this.transformEdgeFunctionDataToClients(data);
+      return clients;
+      
+    } catch (error) {
+      console.error('[ClientService] Error calling Edge Function:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Transform Edge Function response data to Client format
+   */
+  private transformEdgeFunctionDataToClients(data: any): Client[] {
+    // If the Edge Function returns data in the expected Client[] format, return as-is
+    if (Array.isArray(data)) {
+      return data.map((item: any) => ({
+        id: item.id || `client-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        name: item.name || item.customer_name || 'Unknown Client',
+        email: item.email || item.customer_email || 'unknown@example.com',
+        totalRevenue: item.totalRevenue || item.total_revenue || item.revenue || 0,
+        stripeFees: item.stripeFees || item.stripe_fees || item.fees || 0,
+        netProfit: item.netProfit || item.net_profit || item.profit || 0,
+        transactionCount: item.transactionCount || item.transaction_count || item.transactions || 0,
+        lastTransaction: item.lastTransaction || item.last_transaction || new Date().toISOString().split('T')[0],
+        status: (item.status as 'active' | 'inactive') || 'active'
+      }));
+    }
+    
+    // If the Edge Function returns a different format, handle it here
+    if (data.clients) {
+      return this.transformEdgeFunctionDataToClients(data.clients);
+    }
+    
+    // If it's a single object, wrap it in an array
+    if (data && typeof data === 'object') {
+      return this.transformEdgeFunctionDataToClients([data]);
+    }
+    
+    // Return empty array if no valid data
+    return [];
+  }
+
+  /**
    * Get dashboard statistics
    * 
    * @returns Promise with dashboard stats
