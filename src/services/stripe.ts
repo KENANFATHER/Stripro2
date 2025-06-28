@@ -40,8 +40,8 @@ const STRIPE_CONNECT_CONFIG = {
   // Response type for OAuth flow
   responseType: 'code',
   
-  // Redirect URI (should match your backend webhook endpoint)
-  redirectUri: `${window.location.origin}/api/stripe/connect/callback`,
+  // Redirect URI pointing to Supabase Edge Function
+  redirectUri: `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/stripe-connect-callback`,
 };
 
 /**
