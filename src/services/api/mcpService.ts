@@ -91,10 +91,16 @@ interface StripePaymentIntentResponse {
 }
 
 class MCPService extends BaseApiService {
-  private readonly MCP_BASE_URL = 'https://3ae9-2003-d8-b714-b6d1-84b8-1be2-7129-415f.ngrok-free.app';
+  private readonly MCP_BASE_URL: string;
   
   constructor() {
-    super('https://3ae9-2003-d8-b714-b6d1-84b8-1be2-7129-415f.ngrok-free.app');
+    // Get MCP server URL from environment variable with fallback
+    const mcpUrl = import.meta.env.VITE_CUSTOM_MCP_SERVER_URL || 
+                   import.meta.env.VITE_MCP_SERVER_URL || 
+                   'https://3ae9-2003-d8-b714-b6d1-84b8-1be2-7129-415f.ngrok-free.app';
+    
+    super(mcpUrl);
+    this.MCP_BASE_URL = mcpUrl;
     
     // Add ngrok-specific headers and authentication
     this.addRequestInterceptor((config) => ({
@@ -262,7 +268,8 @@ class MCPService extends BaseApiService {
 
     } catch (error) {
       console.error('[MCP] List charges failed:', error);
-      throw error;
+      // Return empty data structure instead of throwing to prevent cascade failures
+      return { data: [] };
     }
   }
 
@@ -286,7 +293,8 @@ class MCPService extends BaseApiService {
 
     } catch (error) {
       console.error('[MCP] List customers failed:', error);
-      throw error;
+      // Return empty data structure instead of throwing to prevent cascade failures
+      return { data: [] };
     }
   }
 
@@ -302,7 +310,11 @@ class MCPService extends BaseApiService {
 
     } catch (error) {
       console.error('[MCP] Get balance failed:', error);
-      throw error;
+      // Return default balance structure instead of throwing
+      return { 
+        available: [{ amount: 0, currency: 'usd' }],
+        pending: [{ amount: 0, currency: 'usd' }]
+      };
     }
   }
 

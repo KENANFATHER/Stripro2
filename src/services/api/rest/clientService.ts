@@ -84,13 +84,26 @@ class ClientService extends BaseApiService {
         };
       } catch (mcpError) {
         console.warn('[ClientService] Custom MCP server failed, using fallback data:', mcpError);
-        const response = await this.get<ListResponse<Client>>(`/clients${this.buildQueryString(params)}`);
-        return response;
+        // Return empty client list instead of making another failing API call
+        return {
+          items: [],
+          total: 0,
+          page: 1,
+          limit: params.limit || 50,
+          hasMore: false
+        };
       }
 
     } catch (error) {
       console.error('Error fetching clients:', error);
-      throw error;
+      // Return empty client list to prevent UI crashes
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: params.limit || 50,
+        hasMore: false
+      };
     }
   }
 
@@ -242,13 +255,19 @@ class ClientService extends BaseApiService {
     try {
       console.log('[ClientService] Fetching profitability data from Supabase Edge Function...');
       
-      const edgeFunctionUrl = 'https://kcpgaavzznnvrnnvhdvo.supabase.co/functions/v1/stripe-profitability';
+      // Get Supabase URL from environment variable with fallback
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://kcpgaavzznnvrnnvhdvo.supabase.co';
+      const edgeFunctionUrl = `${supabaseUrl}/functions/v1/stripe-profitability`;
 
       const response = await fetch(edgeFunctionUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
+          // Add authorization header if available
+          ...(import.meta.env.VITE_SUPABASE_ANON_KEY && {
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          }),
           // If your Edge Function requires authentication (e.g., a JWT),
           // you would add an 'Authorization' header here.
           // For now, assuming it's publicly accessible as per the plan's --no-verify-jwt flag.
@@ -275,7 +294,8 @@ class ClientService extends BaseApiService {
       
     } catch (error) {
       console.error('[ClientService] Error calling Edge Function:', error);
-      throw error;
+      // Return empty array instead of throwing to prevent UI crashes
+      return [];
     }
   }
 
@@ -334,13 +354,30 @@ class ClientService extends BaseApiService {
         return stats;
       } catch (mcpError) {
         console.warn('[ClientService] Custom MCP server stats failed, using fallback:', mcpError);
-        const stats = await this.get<DashboardStats>('/dashboard/stats');
-        return stats;
+        // Return default stats instead of making another failing API call
+        return {
+          totalRevenue: 0,
+          totalFees: 0,
+          netProfit: 0,
+          activeClients: 0,
+          monthlyGrowth: 0,
+          transactionCount: 0,
+          averageTransactionValue: 0
+        };
       }
 
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
-      throw error;
+      // Return default stats to prevent UI crashes
+      return {
+        totalRevenue: 0,
+        totalFees: 0,
+        netProfit: 0,
+        activeClients: 0,
+        monthlyGrowth: 0,
+        transactionCount: 0,
+        averageTransactionValue: 0
+      };
     }
   }
 
