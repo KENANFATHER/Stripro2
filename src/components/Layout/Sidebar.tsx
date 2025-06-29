@@ -183,7 +183,7 @@ const Sidebar: React.FC<SidebarProps> = ({
         </nav>
 
         {/* User Section */}
-        <div className={`border-t border-sage-200 ${isCollapsed ? 'p-2' : 'p-4'} bg-gradient-soft transition-all duration-300`}>
+        <div className={`border-t border-sage-200 ${isCollapsed ? 'p-2' : 'p-4'} transition-all duration-300`}>
           {/* User Profile */}
           {!isCollapsed && (
             <div className="flex items-center space-x-3 mb-4 transition-opacity duration-300">
@@ -200,21 +200,6 @@ const Sidebar: React.FC<SidebarProps> = ({
               </div>
             </div>
           )}
-          
-          {/* Stripe Connection Status */}
-          <div className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'space-x-2 mb-4 p-3'} bg-white rounded-lg border border-sage-200 transition-all duration-300`}>
-            <CreditCard className={`${isCollapsed ? 'w-4 h-4' : 'w-4 h-4'} text-sage-500`} />
-            {!isCollapsed && (
-              <>
-                <span className="text-sm text-sage-700 font-medium">
-                  Stripe: {user?.stripeConnected ? 'Connected' : 'Not Connected'}
-                </span>
-                <div className={`w-2 h-2 rounded-full ${
-                  user?.stripeConnected ? 'bg-green-400' : 'bg-sage-300'
-                }`} />
-              </>
-            )}
-          </div>
           
           {/* Logout Button */}
           <button
