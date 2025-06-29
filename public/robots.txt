@@ -14,7 +14,7 @@ Disallow: /auth/callback
 
 # Sitemap location
 # This tells search engines where to find your sitemap
-Sitemap: https://stripro.com/sitemap.xml
+Sitemap: https://stripro.online/sitemap.xml
 
 # Crawl delay (optional - be respectful to search engines)
 # Crawl-delay: 1

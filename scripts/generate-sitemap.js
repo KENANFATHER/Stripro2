@@ -29,7 +29,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Configuration
-const SITE_URL = process.env.VITE_SITE_URL || 'https://stripro.com';
+const SITE_URL = process.env.VITE_SITE_URL || 'https://stripro.online';
 const OUTPUT_PATH = resolve(__dirname, '../public/sitemap.xml');
 
 /**

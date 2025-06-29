@@ -21,7 +21,7 @@ const { resolve } = require('path');
 
 // Configuration
 const SITEMAP_PATH = resolve(__dirname, '../public/sitemap.xml');
-const SITE_URL = process.env.VITE_SITE_URL || 'https://stripro.com';
+const SITE_URL = process.env.VITE_SITE_URL || 'https://stripro.online';
 const SITEMAP_URL = `${SITE_URL}/sitemap.xml`;
 
 /**
