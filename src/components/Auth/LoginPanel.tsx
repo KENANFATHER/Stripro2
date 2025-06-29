@@ -208,7 +208,7 @@ const LoginPanel: React.FC<LoginPanelProps> = ({ isOpen, onClose, onAuthSuccess 
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-sm sm:max-w-md lg:max-w-lg transform transition-all duration-300 ease-out animate-slideUp"
+        className="relative w-full max-w-xs sm:max-w-sm md:max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out animate-slideUp"
         role="document"
       >
         {/* Modal Container */}
