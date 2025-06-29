@@ -28,6 +28,7 @@ import { CreditCard, User, Bell, Shield, Save, Eye, EyeOff, CheckCircle, AlertTr
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
+import { stripeService } from '../services/stripe';
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
@@ -36,6 +37,8 @@ const SettingsPage: React.FC = () => {
   const navigate = useNavigate();
   
   const [activeSection, setActiveSection] = useState('profile');
+  const [isSaving, setIsSaving] = useState(false);
+  const [isTestingStripe, setIsTestingStripe] = useState(false);
 
   // Profile data state
   const [profileData, setProfileData] = useState({
@@ -51,6 +54,14 @@ const SettingsPage: React.FC = () => {
     monthlyDigest: true,
     newTransactions: false,
     lowProfitAlerts: true
+  });
+
+  // Stripe API keys state
+  const [stripeKeys, setStripeKeys] = useState({
+    publishableKey: '',
+    connectClientId: '',
+    showPublishableKey: false,
+    showConnectClientId: false
   });
 
   // Password change state
@@ -116,7 +127,14 @@ const SettingsPage: React.FC = () => {
   }, [location.search, navigate, showNotification]);
 
   // Load existing Stripe keys on component mount
-  const stripeConfig = stripeService.getConfigInfo();
+  useEffect(() => {
+    const keys = stripeService.getApiKeys();
+    setStripeKeys(prev => ({
+      ...prev,
+      publishableKey: keys.publishableKey || '',
+      connectClientId: keys.connectClientId || ''
+    }));
+  }, []);
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -142,6 +160,73 @@ const SettingsPage: React.FC = () => {
       );
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const handleSaveStripeKeys = async () => {
+    setIsSaving(true);
+    
+    try {
+      if (!stripeKeys.publishableKey.trim()) {
+        throw new Error('Publishable key is required');
+      }
+
+      await stripeService.setApiKeys(
+        stripeKeys.publishableKey.trim(),
+        stripeKeys.connectClientId.trim() || undefined
+      );
+      
+      showNotification(
+        'success',
+        'Stripe Keys Saved',
+        'Your Stripe API keys have been saved successfully.'
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save Stripe keys';
+      showNotification(
+        'error',
+        'Save Failed',
+        errorMessage
+      );
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleTestStripeKey = async () => {
+    setIsTestingStripe(true);
+    
+    try {
+      if (!stripeKeys.publishableKey.trim()) {
+        throw new Error('Please enter a publishable key first');
+      }
+
+      // Temporarily set the key for testing
+      await stripeService.setApiKeys(
+        stripeKeys.publishableKey.trim(),
+        stripeKeys.connectClientId.trim() || undefined
+      );
+
+      const testResult = await stripeService.testApiKey();
+      
+      if (testResult.valid) {
+        showNotification(
+          'success',
+          'API Key Valid',
+          'Your Stripe API key is valid and working correctly.'
+        );
+      } else {
+        throw new Error(testResult.error || 'API key validation failed');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to test API key';
+      showNotification(
+        'error',
+        'API Key Test Failed',
+        errorMessage
+      );
+    } finally {
+      setIsTestingStripe(false);
     }
   };
 
@@ -172,12 +257,12 @@ const SettingsPage: React.FC = () => {
   const connectStripe = async () => {
     try {
       const config = stripeService.getConfigInfo();
-
+      
       if (!config.hasConnectClientId) {
         showNotification(
           'error',
           'Configuration Missing',
-          'Stripe Connect client ID not configured. Please add it to your environment variables.'
+          'Stripe Connect client ID not configured. Please add it in the Stripe Integration section below.'
         );
         return;
       }
@@ -186,7 +271,7 @@ const SettingsPage: React.FC = () => {
         showNotification(
           'error',
           'Configuration Missing',
-          'Stripe publishable key not configured. Please add it to your environment variables.'
+          'Stripe publishable key not configured. Please add it in the Stripe Integration section below.'
         );
         return;
       }
@@ -196,7 +281,7 @@ const SettingsPage: React.FC = () => {
         'Connecting to Stripe',
         'Redirecting to Stripe to connect your account...'
       );
-      
+
       const state = `user_${user?.id}_${Date.now()}`;
       await stripeService.initiateStripeConnect(state);
       
@@ -216,6 +301,8 @@ const SettingsPage: React.FC = () => {
     { id: 'notifications', label: 'Notifications', icon: Bell },
     { id: 'security', label: 'Security', icon: Shield },
   ];
+
+  const stripeConfig = stripeService.getConfigInfo();
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 bg-gradient-soft min-h-screen">
@@ -330,114 +417,161 @@ const SettingsPage: React.FC = () => {
                 {/* Current Status */}
                 <div className="bg-sage-50 border border-sage-200 rounded-xl p-4 mb-6">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-3">
                       <CreditCard className="w-8 h-8 text-coral-600" />
                       <div>
-                        <p className="font-medium text-sage-900">Your Stripe Account</p>
-                        <p className="text-sm text-sage-600 mt-1">
-                          {user?.stripeConnected 
-                            ? `Connected to account ${user?.stripeAccountId || ''}` 
-                            : 'Not connected'}
+                        <p className="font-medium text-sage-900">Stripe Account Status</p>
+                        <p className="text-sm text-sage-600">
+                          {stripeConfig.isConfigured ? 'Configured and ready' : 'Not configured'}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${
-                        user?.stripeConnected ? 'bg-green-400' : 'bg-sage-300'
+                        stripeConfig.isConfigured ? 'bg-green-400' : 'bg-sage-300'
                       }`} />
-                      {stripeConfig.isConfigured && !user?.stripeConnected && (
+                      {stripeConfig.isConfigured && (
                         <button
                           onClick={connectStripe}
                           className="px-4 py-2 bg-coral-600 text-white rounded-lg hover:bg-coral-700 transition-colors font-medium"
                         >
-                          Connect Your Account
+                          Connect Account
                         </button>
                       )}
                     </div>
                   </div>
                   
-                  {user?.stripeConnected && (
+                  {stripeConfig.isConfigured && (
                     <div className="mt-4 pt-4 border-t border-sage-200">
-                      <p className="text-sm text-sage-600">
-                        Your Stripe account is connected and ready to use. You can now view your client profitability data on the dashboard.
-                      </p>
-                      <button
-                        onClick={() => navigate('/dashboard')}
-                        className="mt-3 px-4 py-2 bg-sage-100 text-sage-700 rounded-lg hover:bg-sage-200 transition-colors font-medium"
-                      >
-                        View Dashboard
-                      </button>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <span className="text-sage-600">Environment:</span>
+                          <span className={`ml-2 px-2 py-1 rounded-full text-xs font-medium ${
+                            stripeConfig.keyType === 'test' 
+                              ? 'bg-yellow-100 text-yellow-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {stripeConfig.keyType === 'test' ? 'Test Mode' : 'Live Mode'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-sage-600">Publishable Key:</span>
+                          <span className="ml-2 font-mono text-xs">{stripeConfig.publishableKeyMasked}</span>
+                        </div>
+                        {stripeConfig.hasConnectClientId && (
+                          <div className="sm:col-span-2">
+                            <span className="text-sage-600">Connect Client ID:</span>
+                            <span className="ml-2 font-mono text-xs">{stripeConfig.connectClientIdMasked}</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>
 
-                {/* Platform Configuration Status */}
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
-                  <h4 className="font-medium text-blue-900 mb-2">Platform Configuration Status</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-blue-800">Stripe Environment:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        stripeConfig.keyType === 'test' 
-                          ? 'bg-yellow-100 text-yellow-800' 
-                          : stripeConfig.keyType === 'live'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-red-100 text-red-800'
-                      }`}>
-                        {stripeConfig.keyType === 'test' 
-                          ? 'Test Mode' 
-                          : stripeConfig.keyType === 'live'
-                            ? 'Live Mode'
-                            : 'Not Configured'}
-                      </span>
+                {/* API Keys Configuration */}
+                <div className="space-y-6">
+                  <div>
+                    <label htmlFor="publishableKey" className="block text-sm font-medium text-sage-700 mb-2">
+                      Stripe Publishable Key *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={stripeKeys.showPublishableKey ? 'text' : 'password'}
+                        id="publishableKey"
+                        value={stripeKeys.publishableKey}
+                        onChange={(e) => setStripeKeys(prev => ({ ...prev, publishableKey: e.target.value }))}
+                        placeholder="pk_test_... or pk_live_..."
+                        className="w-full px-4 py-3 pr-12 border border-sage-300 rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors font-mono text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setStripeKeys(prev => ({ ...prev, showPublishableKey: !prev.showPublishableKey }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-sage-400 hover:text-sage-600 transition-colors"
+                      >
+                        {stripeKeys.showPublishableKey ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-blue-800">Publishable Key:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        stripeConfig.hasPublishableKey
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {stripeConfig.hasPublishableKey 
-                          ? `Configured (${stripeConfig.publishableKeyPrefix}...)` 
-                          : 'Missing'}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-blue-800">Connect Client ID:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        stripeConfig.hasConnectClientId
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-red-100 text-red-800'
-                      }`}>
-                        {stripeConfig.hasConnectClientId 
-                          ? `Configured (${stripeConfig.connectClientIdPrefix}...)` 
-                          : 'Missing'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="mt-4 pt-4 border-t border-blue-200">
-                    <p className="text-sm text-blue-700">
-                      <strong>Note:</strong> Stripe API keys are configured at the platform level via environment variables.
-                      Individual users connect their Stripe accounts via OAuth without entering API keys.
+                    <p className="text-xs text-sage-500 mt-1">
+                      Your Stripe publishable key (starts with pk_test_ or pk_live_)
                     </p>
                   </div>
-                </div>
-                
-                {/* Help Text */}
-                <div className="bg-sage-50 border border-sage-200 rounded-xl p-4">
-                  <h4 className="font-medium text-sage-900 mb-2">About Stripe Connect</h4>
-                  <p className="text-sm text-sage-700 mb-3">
-                    Stripe Connect allows you to securely connect your Stripe account to Stripro without sharing your API keys.
-                    This integration enables Stripro to access your transaction data and calculate profitability metrics.
-                  </p>
-                  <h5 className="font-medium text-sage-800 mt-4 mb-1">Benefits:</h5>
-                  <ul className="text-sm text-sage-700 space-y-1 list-disc list-inside">
-                    <li>Secure access without sharing sensitive API keys</li>
-                    <li>Real-time transaction data and analytics</li>
-                    <li>Automatic fee calculation and profitability metrics</li>
-                    <li>Revoke access at any time from your Stripe dashboard</li>
-                  </ul>
+
+                  <div>
+                    <label htmlFor="connectClientId" className="block text-sm font-medium text-sage-700 mb-2">
+                      Stripe Connect Client ID
+                    </label>
+                    <div className="relative">
+                      <input
+                        type={stripeKeys.showConnectClientId ? 'text' : 'password'}
+                        id="connectClientId"
+                        value={stripeKeys.connectClientId}
+                        onChange={(e) => setStripeKeys(prev => ({ ...prev, connectClientId: e.target.value }))}
+                        placeholder="ca_..."
+                        className="w-full px-4 py-3 pr-12 border border-sage-300 rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors font-mono text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setStripeKeys(prev => ({ ...prev, showConnectClientId: !prev.showConnectClientId }))}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 text-sage-400 hover:text-sage-600 transition-colors"
+                      >
+                        {stripeKeys.showConnectClientId ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
+                    <p className="text-xs text-sage-500 mt-1">
+                      Required for Stripe Connect (starts with ca_). Optional if you don't use Connect.
+                    </p>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                    <button
+                      onClick={handleTestStripeKey}
+                      disabled={isTestingStripe || !stripeKeys.publishableKey.trim()}
+                      className="flex items-center justify-center space-x-2 px-4 py-2 border border-sage-300 text-sage-700 rounded-xl hover:bg-sage-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isTestingStripe ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-sage-600 border-t-transparent rounded-full animate-spin" />
+                          <span>Testing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <TestTube className="w-4 h-4" />
+                          <span>Test Key</span>
+                        </>
+                      )}
+                    </button>
+                    
+                    <button
+                      onClick={handleSaveStripeKeys}
+                      disabled={isSaving || !stripeKeys.publishableKey.trim()}
+                      className="flex items-center justify-center space-x-2 px-4 py-2 bg-coral-600 text-white rounded-xl hover:bg-coral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isSaving ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Key className="w-4 h-4" />
+                          <span>Save Keys</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {/* Help Text */}
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <h4 className="font-medium text-blue-900 mb-2">How to get your Stripe keys:</h4>
+                    <ol className="text-sm text-blue-800 space-y-1 list-decimal list-inside">
+                      <li>Log in to your <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Stripe Dashboard</a></li>
+                      <li>Go to "Developers" → "API keys"</li>
+                      <li>Copy your "Publishable key" (starts with pk_test_ or pk_live_)</li>
+                      <li>For Connect: Go to "Connect" → "Settings" and copy your "Client ID" (starts with ca_)</li>
+                    </ol>
+                  </div>
                 </div>
               </div>
             )}
