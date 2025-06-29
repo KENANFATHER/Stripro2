@@ -32,7 +32,6 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { Sidebar, NotificationContainer, BoltBadge } from './components';
 import { 
   LandingPage,
-  AuthPage, 
   AuthCallbackPage,
   DashboardPage, 
   ClientsPage, 
@@ -112,8 +111,7 @@ const AppContent: React.FC = () => {
     <Router>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/auth/callback" element={<AuthCallbackPage />} />
-        <Route path="*" element={<AuthPage />} />
+        <Route path="*" element={<LandingPage />} />
       </Routes>
       <BoltBadge />
     </Router>

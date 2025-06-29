@@ -69,7 +69,7 @@ const AuthCallbackPage: React.FC = () => {
 
         // Redirect to login page after a delay
         setTimeout(() => {
-          navigate('/auth', { replace: true });
+          navigate('/', { replace: true });
         }, 3000);
       }
     };
