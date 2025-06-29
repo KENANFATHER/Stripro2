@@ -1,0 +1,16 @@
+{
+  "functions": [
+    {
+      "name": "stripe-connect-callback",
+      "verify_jwt": false
+    },
+    {
+      "name": "stripe-webhook",
+      "verify_jwt": false
+    },
+    {
+      "name": "stripe-profitability",
+      "verify_jwt": true
+    }
+  ]
+}
