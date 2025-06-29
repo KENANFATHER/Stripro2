@@ -1,0 +1,14 @@
+{
+  "functions": {
+    "*.ts": {
+      "memory": 1024,
+      "verify_jwt": true
+    },
+    "stripe-connect-callback/index.ts": {
+      "verify_jwt": false
+    },
+    "stripe-webhook/index.ts": {
+      "verify_jwt": false
+    }
+  }
+}
