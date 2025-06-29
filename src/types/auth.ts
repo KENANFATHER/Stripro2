@@ -15,6 +15,7 @@ export interface User {
   email: string;
   name: string;
   stripeConnected: boolean;
+  stripeAccountId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

@@ -155,7 +155,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       name: supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || supabaseUser.email?.split('@')[0] || '',
-      stripeConnected: supabaseUser.user_metadata?.stripe_connected || false
+      stripeConnected: supabaseUser.user_metadata?.stripe_connected || false,
+      stripeAccountId: supabaseUser.user_metadata?.stripe_account_id || undefined
     };
   };
 

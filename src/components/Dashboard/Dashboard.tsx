@@ -25,9 +25,11 @@ import ClientTable from './ClientTable';
 import { useApi } from '../../hooks';
 import { clientService } from '../../services/api';
 import { Client, DashboardStats } from '../../types';
+import { useAuth } from '../../contexts/AuthContext';
 import { fallbackClients, fallbackDashboardStats } from '../../data/dummyData';
 
 const Dashboard: React.FC = () => {
+  const { user } = useAuth();
   const [profitabilityData, setProfitabilityData] = React.useState<Client[] | null>(null);
   const [profitabilityLoading, setProfitabilityLoading] = React.useState(false);
   const [profitabilityError, setProfitabilityError] = React.useState<string | null>(null);
@@ -55,8 +57,16 @@ const Dashboard: React.FC = () => {
     const fetchProfitability = async () => {
       setProfitabilityLoading(true);
       setProfitabilityError(null);
+      
+      // Log user's Stripe connection status
+      console.log('[Dashboard] User Stripe connection status:', {
+        connected: user?.stripeConnected,
+        accountId: user?.stripeAccountId
+      });
+      
       try {
-        const data = await clientService.getProfitabilityFromEdgeFunction();
+        // Pass the user's Stripe account ID if available
+        const data = await clientService.getProfitabilityFromEdgeFunction(user?.stripeAccountId);
         setProfitabilityData(data);
         console.log('[Dashboard] Edge Function profitability data loaded:', data);
       } catch (err) {
@@ -68,8 +78,11 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    fetchProfitability();
-  }, [fetchClients, fetchStats]);
+    // Only fetch if user is authenticated
+    if (user) {
+      fetchProfitability();
+    }
+  }, [fetchClients, fetchStats, user]);
 
   // Use fallback data if API fails
   const displayClients = clients || (clientsError ? fallbackClients : []);

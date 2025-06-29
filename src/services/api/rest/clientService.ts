@@ -213,26 +213,37 @@ class ClientService extends BaseApiService {
   /**
    * Get client profitability data from Supabase Edge Function
    * 
+   * @param stripeAccountId - Optional Stripe account ID for connected accounts
    * @returns Promise with profitability data from Edge Function
    */
-  async getProfitabilityFromEdgeFunction(): Promise<Client[]> {
+  async getProfitabilityFromEdgeFunction(stripeAccountId?: string): Promise<Client[]> {
     try {
-      console.log('[ClientService] Fetching profitability data from Supabase Edge Function...');
+      console.log('[ClientService] Fetching profitability data from Supabase Edge Function...', 
+        stripeAccountId ? `Using Stripe account: ${stripeAccountId}` : 'Using default account');
       
       // Get Supabase URL from environment variable with fallback
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://kcpgaavzznnvrnnvhdvo.supabase.co';
       const edgeFunctionUrl = `${supabaseUrl}/functions/v1/stripe-profitability`;
 
+      // Prepare headers
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      };
+      
+      // Add authorization header if available
+      if (import.meta.env.VITE_SUPABASE_ANON_KEY) {
+        headers['Authorization'] = `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`;
+      }
+      
+      // Add Stripe account header if provided
+      if (stripeAccountId) {
+        headers['X-Stripe-Account'] = stripeAccountId;
+      }
+
       const response = await fetch(edgeFunctionUrl, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          // Add authorization header if available
-          ...(import.meta.env.VITE_SUPABASE_ANON_KEY && {
-            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
-          }),
-        },
+        headers,
       });
 
       if (!response.ok) {

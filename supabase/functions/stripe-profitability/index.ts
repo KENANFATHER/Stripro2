@@ -53,6 +53,12 @@ serve(async (req) => {
 
   try {
     console.log('Stripe profitability calculation started...')
+    
+    // Check for Stripe account ID in headers (for Stripe Connect)
+    const stripeAccountId = req.headers.get('X-Stripe-Account')
+    if (stripeAccountId) {
+      console.log(`Using connected Stripe account: ${stripeAccountId}`)
+    }
 
     // Get Stripe secret key from environment
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
@@ -63,11 +69,18 @@ serve(async (req) => {
     console.log('Fetching customers from Stripe...')
 
     // Fetch customers from Stripe
-    const customersResponse = await fetch('https://api.stripe.com/v1/customers?limit=100', {
+    const customersHeaders: Record<string, string> = {
       headers: {
         'Authorization': `Bearer ${stripeSecretKey}`,
-      },
-    })
+      }
+    }
+    
+    // Add Stripe-Account header for connected accounts
+    if (stripeAccountId) {
+      customersHeaders.headers['Stripe-Account'] = stripeAccountId
+    }
+    
+    const customersResponse = await fetch('https://api.stripe.com/v1/customers?limit=100', customersHeaders)
 
     if (!customersResponse.ok) {
       const errorData = await customersResponse.text()
@@ -83,11 +96,18 @@ serve(async (req) => {
     // Fetch charges from Stripe
     console.log('Fetching charges from Stripe...')
     
-    const chargesResponse = await fetch('https://api.stripe.com/v1/charges?limit=100', {
+    const chargesHeaders: Record<string, string> = {
       headers: {
         'Authorization': `Bearer ${stripeSecretKey}`,
-      },
-    })
+      }
+    }
+    
+    // Add Stripe-Account header for connected accounts
+    if (stripeAccountId) {
+      chargesHeaders.headers['Stripe-Account'] = stripeAccountId
+    }
+    
+    const chargesResponse = await fetch('https://api.stripe.com/v1/charges?limit=100', chargesHeaders)
 
     if (!chargesResponse.ok) {
       const errorData = await chargesResponse.text()
@@ -103,11 +123,18 @@ serve(async (req) => {
     // Fetch refunds from Stripe
     console.log('Fetching refunds from Stripe...')
     
-    const refundsResponse = await fetch('https://api.stripe.com/v1/refunds?limit=100', {
+    const refundsHeaders: Record<string, string> = {
       headers: {
         'Authorization': `Bearer ${stripeSecretKey}`,
-      },
-    })
+      }
+    }
+    
+    // Add Stripe-Account header for connected accounts
+    if (stripeAccountId) {
+      refundsHeaders.headers['Stripe-Account'] = stripeAccountId
+    }
+    
+    const refundsResponse = await fetch('https://api.stripe.com/v1/refunds?limit=100', refundsHeaders)
 
     if (!refundsResponse.ok) {
       const errorData = await refundsResponse.text()

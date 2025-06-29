@@ -202,6 +202,20 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
           
           {/* Logout Button */}
+          <div className={`flex items-center ${isCollapsed ? 'justify-center p-2' : 'space-x-2 mb-4 p-3'} bg-white rounded-lg border border-sage-200 transition-all duration-300`}>
+            <CreditCard className={`${isCollapsed ? 'w-4 h-4' : 'w-4 h-4'} text-sage-500`} />
+            {!isCollapsed && (
+              <>
+                <span className="text-sm text-sage-700 font-medium">
+                  Stripe: {user?.stripeConnected ? 'Connected' : 'Not Connected'}
+                </span>
+                <div className={`w-2 h-2 rounded-full ${
+                  user?.stripeConnected ? 'bg-green-400' : 'bg-sage-300'
+                }`} />
+              </>
+            )}
+          </div>
+          
           <button
             onClick={handleLogout}
             className={`w-full flex items-center ${isCollapsed ? 'justify-center p-3' : 'space-x-3 px-4 py-3'} text-left text-sage-700 hover:bg-white hover:text-sage-900 rounded-lg transition-all duration-200 border border-transparent hover:border-sage-200`}
