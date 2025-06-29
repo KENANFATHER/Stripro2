@@ -16,8 +16,13 @@
  * - Follow the provided instructions for manual submission
  */
 
-const { existsSync } = require('fs');
-const { resolve } = require('path');
+import { existsSync } from 'fs';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configuration
 const SITEMAP_PATH = resolve(__dirname, '../public/sitemap.xml');
@@ -167,11 +172,11 @@ async function submitSitemap() {
 }
 
 // Run submission helper if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   submitSitemap().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });
 }
 
-module.exports = { submitSitemap, pingSitemapToSearchEngines };
+export { submitSitemap, pingSitemapToSearchEngines };

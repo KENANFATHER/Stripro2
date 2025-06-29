@@ -17,9 +17,13 @@
  * - Integrate into CI/CD pipeline for automated validation
  */
 
-const { readFileSync, existsSync } = require('fs');
-const { resolve } = require('path');
-const { URL } = require('url');
+import { readFileSync, existsSync } from 'fs';
+import { resolve } from 'path';
+import { URL, fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configuration
 const SITEMAP_PATH = resolve(__dirname, '../public/sitemap.xml');
@@ -246,11 +250,11 @@ async function validateSitemap() {
 }
 
 // Run validation if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   validateSitemap().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });
 }
 
-module.exports = { validateSitemap, validateSitemapContent };
+export { validateSitemap, validateSitemapContent };
