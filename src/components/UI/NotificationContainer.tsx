@@ -30,7 +30,7 @@ const NotificationContainer: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-4 left-4 z-[70] space-y-2">
+    <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-[70] space-y-2">
       {notifications.map((notification) => (
         <div
           key={notification.id}
