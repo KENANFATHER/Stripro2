@@ -47,8 +47,6 @@ serve(async (req) => {
     // Exchange authorization code for access token
     console.log('Exchanging authorization code for access token...')
     
-    // Remove the Authorization header from the token exchange request
-    // Stripe expects client_secret as a form parameter, not in the Authorization header
     const tokenResponse = await fetch('https://connect.stripe.com/oauth/token', {
       method: 'POST',
       headers: {
@@ -76,7 +74,8 @@ serve(async (req) => {
     // Get connected account details
     const accountResponse = await fetch(`https://api.stripe.com/v1/accounts/${tokenData.stripe_user_id}`, {
       headers: {
-        'Authorization': `Bearer ${stripeSecretKey}`
+        'Authorization': `Bearer ${stripeSecretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
     })
 
