@@ -23,8 +23,10 @@ import { loadStripe, Stripe } from '@stripe/stripe-js';
 
 // Storage keys for persisting API keys
 const STORAGE_KEYS = {
-  PUBLISHABLE_KEY: 'stripe_publishable_key',
-  CONNECT_CLIENT_ID: 'stripe_connect_client_id'
+  // These are no longer used for storing keys in localStorage
+  // They are kept for backward compatibility during migration
+  PUBLISHABLE_KEY: 'stripe_publishable_key_deprecated',
+  CONNECT_CLIENT_ID: 'stripe_connect_client_id_deprecated'
 };
 
 /**
@@ -56,65 +58,63 @@ export class StripeService {
   private connectClientId: string | null = null;
 
   constructor() {
-    this.loadStoredKeys();
+    this.loadEnvKeys();
     this.initializeStripe();
   }
 
   /**
-   * Load API keys from localStorage and environment variables
+   * Load API keys from environment variables only
    */
-  private loadStoredKeys(): void {
-    // Try to load from localStorage first
-    this.publishableKey = localStorage.getItem(STORAGE_KEYS.PUBLISHABLE_KEY) || 
-                         import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null;
+  private loadEnvKeys(): void {
+    // Only load from environment variables
+    this.publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || null;
+    this.connectClientId = import.meta.env.VITE_STRIPE_CONNECT_CLIENT_ID || null;
     
-    this.connectClientId = localStorage.getItem(STORAGE_KEYS.CONNECT_CLIENT_ID) || 
-                          import.meta.env.VITE_STRIPE_CONNECT_CLIENT_ID || null;
+    // Log configuration status (without exposing actual keys)
+    console.log('[StripeService] Initialized with environment variables:', {
+      hasPublishableKey: !!this.publishableKey,
+      hasConnectClientId: !!this.connectClientId,
+      mode: this.publishableKey?.startsWith('pk_test_') ? 'test' : 'live'
+    });
   }
 
   /**
-   * Save API keys to localStorage
-   */
-  private saveKeys(): void {
-    if (this.publishableKey) {
-      localStorage.setItem(STORAGE_KEYS.PUBLISHABLE_KEY, this.publishableKey);
-    }
-    if (this.connectClientId) {
-      localStorage.setItem(STORAGE_KEYS.CONNECT_CLIENT_ID, this.connectClientId);
-    }
-  }
-
-  /**
-   * Set Stripe API keys dynamically
+   * Set Stripe API keys dynamically (for internal use only)
    * 
    * @param publishableKey - Stripe publishable key
    * @param connectClientId - Stripe Connect client ID (optional)
    */
   async setApiKeys(publishableKey: string, connectClientId?: string): Promise<void> {
     try {
-      // Validate publishable key format
-      if (!this.validatePublishableKey(publishableKey)) {
-        throw new Error('Invalid Stripe publishable key format. Key should start with pk_test_ or pk_live_');
+      console.warn('[StripeService] setApiKeys is deprecated and should not be called directly');
+      console.warn('[StripeService] Stripe API keys should be set via environment variables only');
+      
+      // This method is kept for backward compatibility but no longer saves to localStorage
+      // It will only update the in-memory keys for the current session
+      
+      // For development/testing purposes only, we'll still allow updating the in-memory keys
+      if (import.meta.env.DEV) {
+        // Validate publishable key format
+        if (!this.validatePublishableKey(publishableKey)) {
+          throw new Error('Invalid Stripe publishable key format. Key should start with pk_test_ or pk_live_');
+        }
+
+        // Validate Connect client ID format if provided
+        if (connectClientId && !this.validateConnectClientId(connectClientId)) {
+          throw new Error('Invalid Stripe Connect client ID format. ID should start with ca_');
+        }
+
+        // Update internal state
+        this.publishableKey = publishableKey;
+        if (connectClientId) {
+          this.connectClientId = connectClientId;
+        }
+
+        // Reinitialize Stripe with new key
+        await this.initializeStripe();
+
+        console.log('[StripeService] Stripe API keys updated in memory (development mode only)');
       }
-
-      // Validate Connect client ID format if provided
-      if (connectClientId && !this.validateConnectClientId(connectClientId)) {
-        throw new Error('Invalid Stripe Connect client ID format. ID should start with ca_');
-      }
-
-      // Update internal state
-      this.publishableKey = publishableKey;
-      if (connectClientId) {
-        this.connectClientId = connectClientId;
-      }
-
-      // Save to localStorage
-      this.saveKeys();
-
-      // Reinitialize Stripe with new key
-      await this.initializeStripe();
-
-      console.log('Stripe API keys updated successfully');
     } catch (error) {
       console.error('Failed to set Stripe API keys:', error);
       throw error;
@@ -142,11 +142,12 @@ export class StripeService {
    * Clear stored API keys
    */
   clearApiKeys(): void {
-    this.publishableKey = null;
-    this.connectClientId = null;
+    console.warn('[StripeService] clearApiKeys is deprecated and has no effect');
+    console.warn('[StripeService] Stripe API keys should be managed via environment variables only');
+    
+    // For backward compatibility, we'll still clear any legacy localStorage items
     localStorage.removeItem(STORAGE_KEYS.PUBLISHABLE_KEY);
     localStorage.removeItem(STORAGE_KEYS.CONNECT_CLIENT_ID);
-    this.stripe = null;
   }
 
   /**
@@ -343,23 +344,19 @@ export class StripeService {
     hasPublishableKey: boolean;
     hasConnectClientId: boolean;
     keyType: 'test' | 'live' | 'unknown';
-    keyPrefix: string;
-    clientIdPrefix: string;
-    publishableKeyMasked: string;
-    connectClientIdMasked: string;
+    publishableKeyPrefix: string;
+    connectClientIdPrefix: string;
   } {
     const keyType = this.publishableKey?.startsWith('pk_test_') ? 'test' :
                    this.publishableKey?.startsWith('pk_live_') ? 'live' : 'unknown';
 
     return {
-      isConfigured: !!this.publishableKey && !!this.connectClientId,
       hasPublishableKey: !!this.publishableKey,
       hasConnectClientId: !!this.connectClientId,
+      isConfigured: !!this.publishableKey && !!this.connectClientId,
       keyType,
-      keyPrefix: this.publishableKey ? this.publishableKey.substring(0, 20) + '...' : '',
-      clientIdPrefix: this.connectClientId ? this.connectClientId.substring(0, 10) + '...' : '',
-      publishableKeyMasked: this.publishableKey ? this.maskKey(this.publishableKey) : '',
-      connectClientIdMasked: this.connectClientId ? this.maskKey(this.connectClientId) : '',
+      publishableKeyPrefix: this.publishableKey ? this.publishableKey.substring(0, 7) : '',
+      connectClientIdPrefix: this.connectClientId ? this.connectClientId.substring(0, 3) : '',
     };
   }
 
@@ -369,12 +366,12 @@ export class StripeService {
   async testApiKey(): Promise<{ valid: boolean; error?: string }> {
     try {
       if (!this.publishableKey) {
-        return { valid: false, error: 'No API key configured' };
+        return { valid: false, error: 'No Stripe publishable key configured in environment variables' };
       }
 
       const stripe = await this.getStripe();
       if (!stripe) {
-        return { valid: false, error: 'Failed to initialize Stripe' };
+        return { valid: false, error: 'Failed to initialize Stripe with the provided key' };
       }
 
       // For testing, we'll just check if Stripe initialized successfully
