@@ -391,13 +391,13 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
       />
 
       {/* Accessibility: Main form with proper semantics and ARIA attributes */}
-      <main className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/30 p-5 sm:p-6 lg:p-8 shadow-2xl">
+      <main className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/30 p-4 sm:p-5 lg:p-6 shadow-2xl">
         {/* Form Header */}
-        <header className="text-center mb-3 sm:mb-4 lg:mb-5">
-          <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-sage-900 mb-2">
+        <header className="text-center mb-2 sm:mb-3 lg:mb-4">
+          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-sage-900 mb-2">
             {isLogin ? 'Welcome Back' : 'Create Account'}
           </h2>
-          <p className="text-sage-600 text-sm sm:text-base">
+          <p className="text-sage-600 text-xs sm:text-sm">
             {isLogin 
               ? 'Sign in to access your analytics dashboard' 
               : 'Start analyzing your Stripe profitability today'
@@ -407,16 +407,16 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
 
         {/* Security Notice */}
         <section 
-          className="bg-sage-50 border border-sage-200 rounded-lg sm:rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 lg:mb-5"
+          className="bg-sage-50 border border-sage-200 rounded-lg sm:rounded-xl p-2 sm:p-3 mb-2 sm:mb-3 lg:mb-4"
           aria-labelledby="security-notice-heading"
         >
           <div className="flex items-start space-x-3">
-            <Shield className="w-4 sm:w-5 h-4 sm:h-5 text-sage-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
+            <Shield className="w-3 sm:w-4 h-3 sm:h-4 text-sage-600 mt-0.5 flex-shrink-0" aria-hidden="true" />
             <div>
-              <h3 id="security-notice-heading" className="text-sm sm:text-base font-semibold text-sage-800">
+              <h3 id="security-notice-heading" className="text-xs sm:text-sm font-semibold text-sage-800">
                 Enterprise Security
               </h3>
-              <p className="text-xs sm:text-sm text-sage-600 mt-1">
+              <p className="text-xs text-sage-600 mt-1">
                 Your data is protected with bank-level encryption, validation, and bot protection.
               </p>
             </div>
@@ -426,7 +426,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
         <form 
           ref={formRef}
           onSubmit={handleSubmit} 
-          className="space-y-3 sm:space-y-4 lg:space-y-5"
+          className="space-y-2 sm:space-y-3 lg:space-y-4"
           noValidate // We handle validation ourselves for better UX
           aria-labelledby="form-heading"
         >
@@ -436,7 +436,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           </h2>
 
           {/* Accessibility: Fieldset for grouping related form controls */}
-          <fieldset className="space-y-3 sm:space-y-4 lg:space-y-5">
+          <fieldset className="space-y-2 sm:space-y-3 lg:space-y-4">
             <legend className="sr-only">
               {isLogin ? 'Login credentials' : 'Account information'}
             </legend>
@@ -446,7 +446,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
               <div>
                 <label 
                   htmlFor="signup-name" 
-                  className="block text-sm sm:text-base font-semibold text-sage-700 mb-2"
+                  className="block text-xs sm:text-sm font-semibold text-sage-700 mb-1"
                 >
                   Full Name *
                 </label>
@@ -461,7 +461,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                   autoComplete="name"
                   aria-describedby={validation.name.hasError ? 'name-error' : undefined}
                   aria-invalid={validation.name.hasError}
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors text-sm sm:text-base ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors text-sm ${
                     validation.name.hasError ? 'border-red-300 bg-red-50' : 'border-sage-300'
                   }`}
                   placeholder="Enter your full name"
@@ -471,17 +471,17 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                   <div 
                     id="name-error"
                     role="alert"
-                    className="flex items-center space-x-1 mt-1.5"
+                    className="flex items-center space-x-1 mt-1"
                   >
-                    <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm text-red-600">{validation.name.message}</span>
+                    <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-xs text-red-600">{validation.name.message}</span>
                   </div>
                 )}
                 {/* Accessibility: Success indicator */}
                 {validation.name.isValid && signupData.name && !validation.name.hasError && (
-                  <div className="flex items-center space-x-1 mt-1.5">
-                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                    <span className="text-sm text-green-600">Valid name</span>
+                  <div className="flex items-center space-x-1 mt-1">
+                    <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" aria-hidden="true" />
+                    <span className="text-xs text-green-600">Valid name</span>
                   </div>
                 )}
               </div>
@@ -491,7 +491,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
             <div>
               <label 
                 htmlFor={isLogin ? 'login-email' : 'signup-email'} 
-                className="block text-sm sm:text-base font-semibold text-sage-700 mb-2"
+                className="block text-xs sm:text-sm font-semibold text-sage-700 mb-1"
               >
                 Email Address *
               </label>
@@ -506,7 +506,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                 autoComplete="email"
                 aria-describedby={validation.email.hasError ? 'email-error' : undefined}
                 aria-invalid={validation.email.hasError}
-                className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors text-sm sm:text-base ${
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors text-sm ${
                   validation.email.hasError ? 'border-red-300 bg-red-50' : 'border-sage-300'
                 }`}
                 placeholder="Enter your email"
@@ -516,17 +516,17 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                 <div 
                   id="email-error"
                   role="alert"
-                  className="flex items-center space-x-1 mt-1.5"
+                  className="flex items-center space-x-1 mt-1"
                 >
-                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" aria-hidden="true" />
-                  <span className="text-sm text-red-600">{validation.email.message}</span>
+                  <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0" aria-hidden="true" />
+                  <span className="text-xs text-red-600">{validation.email.message}</span>
                 </div>
               )}
               {/* Accessibility: Success indicator */}
               {validation.email.isValid && currentData.email && !validation.email.hasError && (
-                <div className="flex items-center space-x-1 mt-1.5">
-                  <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" aria-hidden="true" />
-                  <span className="text-sm text-green-600">Valid email address</span>
+                <div className="flex items-center space-x-1 mt-1">
+                  <CheckCircle className="w-3 h-3 text-green-500 flex-shrink-0" aria-hidden="true" />
+                  <span className="text-xs text-green-600">Valid email address</span>
                 </div>
               )}
             </div>
@@ -535,7 +535,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
             <div>
               <label 
                 htmlFor={isLogin ? 'login-password' : 'signup-password'} 
-                className="block text-sm sm:text-base font-semibold text-sage-700 mb-2"
+                className="block text-xs sm:text-sm font-semibold text-sage-700 mb-1"
               >
                 Password *
               </label>
@@ -550,7 +550,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                   autoComplete={isLogin ? 'current-password' : 'new-password'}
                   aria-describedby={`${isLogin ? 'login' : 'signup'}-password-description ${validation.password.hasError ? 'password-error' : ''}`}
                   aria-invalid={validation.password.hasError}
-                  className={`w-full px-3 sm:px-4 py-2.5 sm:py-3 pr-10 sm:pr-12 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors text-sm sm:text-base ${
+                  className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors text-sm ${
                     validation.password.hasError ? 'border-red-300 bg-red-50' : 'border-sage-300'
                   }`}
                   placeholder="Enter your password"
@@ -561,11 +561,11 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                   onClick={togglePasswordVisibility}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                   aria-pressed={showPassword}
-                  className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 p-1.5 text-sage-400 hover:text-sage-600 focus:outline-none focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 rounded transition-colors"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-sage-400 hover:text-sage-600 focus:outline-none focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 rounded transition-colors"
                 >
                   {showPassword ? 
-                    <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" /> : 
-                    <Eye className="w-4 h-4 sm:w-5 sm:h-5" aria-hidden="true" />
+                    <EyeOff className="w-4 h-4" aria-hidden="true" /> : 
+                    <Eye className="w-4 h-4" aria-hidden="true" />
                   }
                 </button>
               </div>
@@ -573,7 +573,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
               {/* Accessibility: Password requirements description */}
               <div 
                 id={`${isLogin ? 'login' : 'signup'}-password-description`}
-                className="text-xs sm:text-sm text-sage-600 mt-1.5"
+                className="text-xs text-sage-600 mt-1"
               >
                 {!isLogin && 'Password must be at least 8 characters with uppercase, lowercase, number, and special character.'}
               </div>
@@ -583,16 +583,16 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
                 <div 
                   id="password-error"
                   role="alert"
-                  className="flex items-center space-x-1 mt-1.5"
+                  className="flex items-center space-x-1 mt-1"
                 >
-                  <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" aria-hidden="true" />
-                  <span className="text-sm text-red-600">{validation.password.message}</span>
+                  <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0" aria-hidden="true" />
+                  <span className="text-xs text-red-600">{validation.password.message}</span>
                 </div>
               )}
               
               {/* Code Splitting: Lazy load password strength indicator for signup */}
               {!isLogin && (
-                <Suspense fallback={<div className="text-xs text-sage-500 mt-1.5">Loading password strength indicator...</div>}>
+                <Suspense fallback={<div className="text-xs text-sage-500 mt-1">Loading password strength indicator...</div>}>
                   <PasswordStrengthIndicator password={signupData.password} />
                 </Suspense>
               )}
@@ -602,9 +602,9 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           {/* Code Splitting: Lazy load reCAPTCHA component */}
           <div>
             <Suspense fallback={
-              <div className="flex items-center justify-center p-3 sm:p-4 border border-sage-200 rounded-lg sm:rounded-xl">
-                <Loader2 className="w-5 h-5 animate-spin text-sage-500" />
-                <span className="ml-2 text-xs sm:text-sm text-sage-600">Loading security verification...</span>
+              <div className="flex items-center justify-center p-2 sm:p-3 border border-sage-200 rounded-lg">
+                <Loader2 className="w-4 h-4 animate-spin text-sage-500" />
+                <span className="ml-2 text-xs text-sage-600">Loading security verification...</span>
               </div>
             }>
               <ReCaptcha
@@ -621,11 +621,11 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
             <div 
               role="alert"
               aria-live="assertive"
-              className="bg-red-50 border border-red-200 rounded-lg sm:rounded-xl p-3"
+              className="bg-red-50 border border-red-200 rounded-lg p-2"
             >
               <div className="flex items-start space-x-2">
-                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <p className="text-sm text-red-600">{formError}</p>
+                <AlertTriangle className="w-3 h-3 text-red-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <p className="text-xs text-red-600">{formError}</p>
               </div>
             </div>
           )}
@@ -634,11 +634,11 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           {attemptCount >= 3 && (
             <div 
               role="alert"
-              className="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-3"
+              className="bg-yellow-50 border border-yellow-200 rounded-lg p-2"
             >
               <div className="flex items-start space-x-2">
-                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
-                <p className="text-sm text-yellow-700">
+                <AlertTriangle className="w-3 h-3 text-yellow-500 mt-0.5 flex-shrink-0" aria-hidden="true" />
+                <p className="text-xs text-yellow-700">
                   Multiple failed attempts detected. {5 - attemptCount} attempts remaining.
                 </p>
               </div>
@@ -651,11 +651,11 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
               type="submit"
               disabled={isLoading || isSubmitting || !isFormValid}
               aria-describedby="submit-button-description"
-              className="w-full py-2.5 sm:py-3 px-4 bg-gradient-coral text-white rounded-lg sm:rounded-xl font-semibold hover:shadow-lg focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base min-h-[44px]"
+              className="w-full py-2 px-4 bg-gradient-coral text-white rounded-lg font-semibold hover:shadow-lg focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm min-h-[40px]"
             >
               {isLoading || isSubmitting ? (
                 <span className="flex items-center justify-center space-x-2">
-                  <Loader2 className="w-4 sm:w-5 h-4 sm:h-5 animate-spin" aria-hidden="true" />
+                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                   <span>{isLogin ? 'Signing in...' : 'Creating account...'}</span>
                 </span>
               ) : (
@@ -670,11 +670,11 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
           </div>
 
           {/* OAuth Divider */}
-          <div className="relative my-3 sm:my-4 lg:my-5">
+          <div className="relative my-2 sm:my-3 lg:my-4">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-sage-300" />
             </div>
-            <div className="relative flex justify-center text-sm">
+            <div className="relative flex justify-center text-xs">
               <span className="px-4 bg-white text-sage-600 font-medium">Or continue with</span>
             </div>
           </div>
@@ -691,19 +691,19 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
         </form>
 
         {/* Accessibility: Enhanced mode toggle with proper semantics */}
-        <div className="mt-3 sm:mt-4 lg:mt-5 text-center">
-          <p className="text-sm text-sage-600">
+        <div className="mt-2 sm:mt-3 lg:mt-4 text-center">
+          <p className="text-xs text-sage-600">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
               type="button"
               onClick={toggleMode}
-              className="ml-1 text-coral-600 hover:text-coral-500 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 rounded px-1"
+              className="ml-1 text-coral-600 hover:text-coral-500 font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 rounded px-1 text-xs"
               aria-describedby="mode-toggle-description"
             >
               {isLogin ? 'Sign up' : 'Sign in'}
             </button>
           </p>
-          <div id="mode-toggle-description" className="sr-only">
+          <div id="mode-toggle-description" className="sr-only text-xs">
             Switch to {isLogin ? 'create a new account' : 'sign in with existing account'}
           </div>
         </div>
