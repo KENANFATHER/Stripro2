@@ -290,6 +290,22 @@ const LandingPage: React.FC = () => {
 
         </main>
         
+        {/* Footer with Support Email */}
+        <footer className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 text-center text-white/80 text-xs sm:text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center space-y-2 sm:space-y-0 sm:space-x-4">
+            <p>© {new Date().getFullYear()} Stripro. All rights reserved.</p>
+            <p>
+              Need help? Contact us at{' '}
+              <a 
+                href="mailto:support@stripe.online" 
+                className="text-white font-medium hover:underline focus:outline-none focus:ring-2 focus:ring-white/50 focus:ring-offset-2 focus:ring-offset-transparent rounded"
+              >
+                support@stripe.online
+              </a>
+            </p>
+          </div>
+        </footer>
+        
         {/* Login Panel Modal */}
         <LoginPanel
           isOpen={showLoginPanel}

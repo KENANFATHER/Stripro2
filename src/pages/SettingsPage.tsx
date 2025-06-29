@@ -735,6 +735,27 @@ const SettingsPage: React.FC = () => {
                   )}
                 </button>
               </div>
+            </button>
+          </div>
+        )}
+
+        {/* Support Information */}
+        {activeSection === 'profile' && (
+          <div className="mt-8 pt-6 border-t border-sage-200">
+            <h4 className="text-lg font-semibold text-sage-900 mb-4">Need Help?</h4>
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+              <p className="text-blue-800 mb-2">
+                If you have any questions or need assistance, please contact our support team:
+              </p>
+              <a 
+                href="mailto:support@stripe.online" 
+                className="text-blue-600 font-medium hover:underline"
+              >
+                support@stripe.online
+              </a>
+              <p className="text-blue-700 text-sm mt-2">
+                We typically respond within 24 hours during business days.
+              </p>
             )}
           </div>
         </div>

@@ -12,6 +12,18 @@ A comprehensive SaaS dashboard for analyzing Stripe client profitability with be
 - **Beautiful Design**: Custom color palette with lilac, tangerine, coral, and sage tones
 - **Responsive Design**: Works on all devices
 
+## Support
+
+If you encounter any issues or have questions about Stripro, please contact our support team:
+
+- **Email**: support@stripe.online
+- **Response Time**: Within 24 hours during business days
+
+For bug reports, please include:
+- Your browser and operating system
+- Steps to reproduce the issue
+- Screenshots if applicable
+
 ## Design System
 
 ### Color Palette
