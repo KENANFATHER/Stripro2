@@ -366,10 +366,18 @@ export class StripeService {
   /**
    * Test the current API key by making a simple request
    */
-  async testApiKey(): Promise<{ valid: boolean; error?: string }> {
+  async testApiKey(publishableKey?: string): Promise<{ valid: boolean; error?: string }> {
     try {
-      if (!this.publishableKey) {
+      // Use provided key or the stored key
+      const keyToTest = publishableKey || this.publishableKey;
+      
+      if (!keyToTest) {
         return { valid: false, error: 'No API key configured' };
+      }
+
+      // If a key was provided, temporarily set it for testing
+      if (publishableKey && publishableKey !== this.publishableKey) {
+        await this.setApiKeys(publishableKey);
       }
 
       const stripe = await this.getStripe();
@@ -377,8 +385,16 @@ export class StripeService {
         return { valid: false, error: 'Failed to initialize Stripe' };
       }
 
-      // For testing, we'll just check if Stripe initialized successfully
-      // In a real implementation, you might make a test API call
+      // For testing publishable keys, we can check if it's a valid format
+      // and if Stripe.js initialized successfully
+      const isValidFormat = this.validatePublishableKey(keyToTest);
+      if (!isValidFormat) {
+        return { 
+          valid: false, 
+          error: 'Invalid key format. Publishable keys should start with pk_test_ or pk_live_' 
+        };
+      }
+      
       return { valid: true };
 
     } catch (error) {
@@ -434,7 +450,7 @@ export const centsToDollars = (cents: number): number => {
  * Example usage:
  * 
  * // Set API keys dynamically
- * import { stripeService } from '@/services/stripe';
+ * import { stripeService } from '../services/stripe';
  * 
  * const handleSaveApiKeys = async (publishableKey: string, connectClientId: string) => {
  *   try {
@@ -457,4 +473,12 @@ export const centsToDollars = (cents: number): number => {
  * // Check configuration
  * const config = stripeService.getConfigInfo();
  * console.log('Stripe config:', config);
+ *
+ * // Test API key
+ * const testResult = await stripeService.testApiKey();
+ * if (testResult.valid) {
+ *   console.log('API key is valid');
+ * } else {
+ *   console.error('API key is invalid:', testResult.error);
+ * }
  */
