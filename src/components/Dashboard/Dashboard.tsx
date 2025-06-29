@@ -185,10 +185,10 @@ const Dashboard: React.FC = () => {
       {/* Client Profitability from Supabase Edge Function */}
       <div className="mt-8">
         <h2 className="text-2xl sm:text-3xl font-bold text-sage-900 mb-4">
-          Client Profitability (via Supabase Edge Function)
+          Client Profitability
         </h2>
         <p className="text-sage-600 mb-6">
-          Real-time profitability data calculated by your Supabase Edge Function using live Stripe data.
+          Real-time profitability data calculated using live Stripe data.
         </p>
         
         {profitabilityLoading && (
@@ -208,7 +208,7 @@ const Dashboard: React.FC = () => {
                 <p className="text-red-600 text-xs mt-2">
                   Make sure your Supabase Edge Function is deployed and accessible at: 
                   <code className="bg-red-100 px-1 rounded ml-1">
-                    https://kcpgaavzznnvrnnvhdvo.supabase.co/functions/v1/stripe-profitability
+                    {import.meta.env.VITE_SUPABASE_URL || 'https://kcpgaavzznnvrnnvhdvo.supabase.co'}/functions/v1/stripe-profitability
                   </code>
                 </p>
               </div>
