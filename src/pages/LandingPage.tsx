@@ -216,7 +216,7 @@ const LandingPage: React.FC = () => {
                 {/* Price */}
                 <div className="text-center mb-6">
                   <div className="text-4xl sm:text-5xl lg:text-6xl font-bold text-sage-900 mb-2">
-                    €15
+                    $9.99
                     <span className="text-lg sm:text-xl lg:text-2xl text-sage-600 font-normal">/month</span>
                   </div>
                   <p className="text-sage-600 text-sm sm:text-base">
