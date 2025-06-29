@@ -208,32 +208,18 @@ const LoginPanel: React.FC<LoginPanelProps> = ({ isOpen, onClose, onAuthSuccess 
       {/* Modal Content */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-sm sm:max-w-md md:max-w-lg max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out animate-slideUp"
+        className="relative w-full max-w-sm sm:max-w-md max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out animate-slideUp"
         role="document"
       >
         {/* Modal Container */}
         <div className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/30 shadow-2xl overflow-hidden">
           {/* Header with Close Button */}
-          <div className="relative p-3 sm:p-4 border-b border-sage-200/50">
-            <h2 
-              id="login-panel-title" 
-              className="text-lg sm:text-xl font-bold text-sage-900 text-center pr-8"
-            >
-              Welcome to Stripro
-            </h2>
-            
-            <p 
-              id="login-panel-description" 
-              className="text-sage-600 text-sm text-center mt-1"
-            >
-              Sign in to access your analytics dashboard
-            </p>
-            
+          <div className="relative p-2">
             {/* Close Button */}
             <button
               ref={closeButtonRef}
               onClick={handleCloseClick}
-              className="absolute top-4 right-4 p-2 text-sage-600 hover:text-sage-900 hover:bg-sage-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-coral-500 focus:ring-offset-2"
+              className="absolute top-2 right-2 p-2 text-sage-600 hover:text-sage-900 hover:bg-sage-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-coral-500 focus:ring-offset-2"
               aria-label="Close login dialog"
               type="button"
             >
@@ -242,7 +228,7 @@ const LoginPanel: React.FC<LoginPanelProps> = ({ isOpen, onClose, onAuthSuccess 
           </div>
 
           {/* Login Form Content */}
-          <div className="p-3 sm:p-4 lg:p-5">
+          <div className="p-4 sm:p-5 lg:p-6">
             <AccessibleLoginForm
               initialMode="login"
               onSuccess={handleAuthSuccess}

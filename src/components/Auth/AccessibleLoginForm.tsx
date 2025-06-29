@@ -392,22 +392,9 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
 
       {/* Accessibility: Main form with proper semantics and ARIA attributes */}
       <main className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/30 p-4 sm:p-5 lg:p-6 shadow-2xl">
-        {/* Form Header */}
-        <header className="text-center mb-2 sm:mb-3 lg:mb-4">
-          <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-sage-900 mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="text-sage-600 text-xs sm:text-sm">
-            {isLogin 
-              ? 'Sign in to access your analytics dashboard' 
-              : 'Start analyzing your Stripe profitability today'
-            }
-          </p>
-        </header>
-
         {/* Security Notice */}
         <section 
-          className="bg-sage-50 border border-sage-200 rounded-lg sm:rounded-xl p-2 sm:p-3 mb-2 sm:mb-3 lg:mb-4"
+          className="bg-sage-50 border border-sage-200 rounded-lg sm:rounded-xl p-2 sm:p-3 mb-3 sm:mb-4 lg:mb-5"
           aria-labelledby="security-notice-heading"
         >
           <div className="flex items-start space-x-3">
@@ -426,17 +413,17 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
         <form 
           ref={formRef}
           onSubmit={handleSubmit} 
-          className="space-y-2 sm:space-y-3 lg:space-y-4"
+          className="space-y-3 sm:space-y-4 lg:space-y-5"
           noValidate // We handle validation ourselves for better UX
           aria-labelledby="form-heading"
         >
           {/* Accessibility: Hidden heading for screen readers */}
           <h2 id="form-heading" className="sr-only">
-            {isLogin ? 'Login Form' : 'Sign Up Form'}
+            {isLogin ? 'Sign in to your account' : 'Create a new account'}
           </h2>
 
           {/* Accessibility: Fieldset for grouping related form controls */}
-          <fieldset className="space-y-2 sm:space-y-3 lg:space-y-4">
+          <fieldset className="space-y-3 sm:space-y-4 lg:space-y-5">
             <legend className="sr-only">
               {isLogin ? 'Login credentials' : 'Account information'}
             </legend>
@@ -691,7 +678,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
         </form>
 
         {/* Accessibility: Enhanced mode toggle with proper semantics */}
-        <div className="mt-2 sm:mt-3 lg:mt-4 text-center">
+        <div className="mt-4 sm:mt-5 lg:mt-6 text-center">
           <p className="text-xs text-sage-600">
             {isLogin ? "Don't have an account?" : "Already have an account?"}
             <button
