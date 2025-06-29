@@ -18,9 +18,15 @@
  * - Outputs sitemap.xml to public directory
  */
 
-const { SitemapStream, streamToPromise } = require('sitemap');
-const { createWriteStream } = require('fs');
-const { resolve } = require('path');
+import { SitemapStream, streamToPromise } from 'sitemap';
+import { createWriteStream } from 'fs';
+import { resolve } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
+// Get current directory for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Configuration
 const SITE_URL = process.env.VITE_SITE_URL || 'https://stripro.com';
@@ -76,7 +82,7 @@ async function generateDynamicRoutes() {
     // TODO: Replace with actual database query when implementing client detail pages
     // Example of how you might fetch client IDs from Supabase:
     /*
-    const { createClient } = require('@supabase/supabase-js');
+    import { createClient } from '@supabase/supabase-js';
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,
       process.env.VITE_SUPABASE_ANON_KEY
@@ -198,12 +204,10 @@ async function main() {
   console.log('   • Monitor sitemap indexing status in search tools');
 }
 
-// Run the script
-if (require.main === module) {
-  main().catch(error => {
-    console.error('Fatal error:', error);
-    process.exit(1);
-  });
-}
+// Run the script - ES module equivalent of require.main === module
+main().catch(error => {
+  console.error('Fatal error:', error);
+  process.exit(1);
+});
 
-module.exports = { generateSitemap, generateDynamicRoutes };
+export { generateSitemap, generateDynamicRoutes };
