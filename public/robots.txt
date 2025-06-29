@@ -1,0 +1,33 @@
+# Robots.txt for Stripro - Stripe Analytics Dashboard
+# This file tells search engine crawlers which pages they can access
+
+# Allow all crawlers to access all content
+User-agent: *
+Allow: /
+
+# Disallow crawling of sensitive or unnecessary paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+Disallow: /.well-known/
+Disallow: /auth/callback
+
+# Sitemap location
+# This tells search engines where to find your sitemap
+Sitemap: https://stripro.com/sitemap.xml
+
+# Crawl delay (optional - be respectful to search engines)
+# Crawl-delay: 1
+
+# Additional directives for specific search engines
+# Google-specific directives (optional)
+# User-agent: Googlebot
+# Allow: /
+
+# Bing-specific directives (optional)
+# User-agent: Bingbot
+# Allow: /
+
+# Note: Update the sitemap URL above to match your actual domain
+# For development: http://localhost:5173/sitemap.xml
+# For production: https://your-domain.com/sitemap.xml
