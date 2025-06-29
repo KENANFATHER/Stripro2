@@ -22,14 +22,25 @@ interface StripeCharge {
   application_fee_amount?: number
 }
 
+interface StripeRefund {
+  id: string
+  amount: number
+  currency: string
+  charge: string
+  created: number
+  status: string
+}
+
 interface ClientProfitability {
   id: string
   name: string
   email: string
   totalRevenue: number
   stripeFees: number
+  totalRefunds: number
   netProfit: number
   transactionCount: number
+  refundCount: number
   lastTransaction: string
   status: 'active' | 'inactive'
 }
@@ -89,6 +100,26 @@ serve(async (req) => {
     
     console.log(`Found ${charges.length} charges`)
 
+    // Fetch refunds from Stripe
+    console.log('Fetching refunds from Stripe...')
+    
+    const refundsResponse = await fetch('https://api.stripe.com/v1/refunds?limit=100', {
+      headers: {
+        'Authorization': `Bearer ${stripeSecretKey}`,
+      },
+    })
+
+    if (!refundsResponse.ok) {
+      const errorData = await refundsResponse.text()
+      console.error('Failed to fetch refunds:', errorData)
+      throw new Error(`Failed to fetch refunds: ${errorData}`)
+    }
+
+    const refundsData = await refundsResponse.json()
+    const refunds: StripeRefund[] = refundsData.data || []
+    
+    console.log(`Found ${refunds.length} refunds`)
+
     // Calculate profitability for each customer
     const clientProfitability: ClientProfitability[] = []
 
@@ -104,11 +135,38 @@ serve(async (req) => {
       }
     }
 
+    // Group refunds by charge ID, then map to customers
+    const refundsByCharge = new Map<string, StripeRefund[]>()
+    
+    for (const refund of refunds) {
+      if (refund.status === 'succeeded') {
+        if (!refundsByCharge.has(refund.charge)) {
+          refundsByCharge.set(refund.charge, [])
+        }
+        refundsByCharge.get(refund.charge)!.push(refund)
+      }
+    }
+
+    // Map refunds to customers by looking up charge -> customer relationship
+    const refundsByCustomer = new Map<string, StripeRefund[]>()
+    
+    for (const charge of charges) {
+      if (charge.customer && refundsByCharge.has(charge.id)) {
+        const chargeRefunds = refundsByCharge.get(charge.id)!
+        if (!refundsByCustomer.has(charge.customer)) {
+          refundsByCustomer.set(charge.customer, [])
+        }
+        refundsByCustomer.get(charge.customer)!.push(...chargeRefunds)
+      }
+    }
+
     console.log(`Processing profitability for ${chargesByCustomer.size} customers with charges`)
+    console.log(`Found refunds for ${refundsByCustomer.size} customers`)
 
     // Calculate profitability for each customer
     for (const customer of customers) {
       const customerCharges = chargesByCustomer.get(customer.id) || []
+      const customerRefunds = refundsByCustomer.get(customer.id) || []
       
       if (customerCharges.length === 0) {
         // Include customers with no charges for completeness
@@ -118,8 +176,10 @@ serve(async (req) => {
           email: customer.email || 'no-email@example.com',
           totalRevenue: 0,
           stripeFees: 0,
+          totalRefunds: 0,
           netProfit: 0,
           transactionCount: 0,
+          refundCount: 0,
           lastTransaction: new Date(customer.created * 1000).toISOString().split('T')[0],
           status: 'inactive'
         })
@@ -129,8 +189,10 @@ serve(async (req) => {
       // Calculate totals for this customer
       let totalRevenue = 0
       let totalFees = 0
+      let totalRefunds = 0
       let lastTransactionDate = 0
 
+      // Process charges
       for (const charge of customerCharges) {
         // Convert from cents to dollars
         const amount = charge.amount / 100
@@ -146,7 +208,15 @@ serve(async (req) => {
         }
       }
 
-      const netProfit = totalRevenue - totalFees
+      // Process refunds
+      for (const refund of customerRefunds) {
+        // Convert from cents to dollars
+        const refundAmount = refund.amount / 100
+        totalRefunds += refundAmount
+      }
+
+      // Calculate net profit: Revenue - Fees - Refunds
+      const netProfit = totalRevenue - totalFees - totalRefunds
 
       clientProfitability.push({
         id: customer.id,
@@ -154,18 +224,28 @@ serve(async (req) => {
         email: customer.email || 'no-email@example.com',
         totalRevenue: Math.round(totalRevenue * 100) / 100, // Round to 2 decimal places
         stripeFees: Math.round(totalFees * 100) / 100,
+        totalRefunds: Math.round(totalRefunds * 100) / 100,
         netProfit: Math.round(netProfit * 100) / 100,
         transactionCount: customerCharges.length,
+        refundCount: customerRefunds.length,
         lastTransaction: new Date(lastTransactionDate * 1000).toISOString().split('T')[0],
         status: customerCharges.length > 0 ? 'active' : 'inactive'
       })
     }
 
-    // Sort by total revenue (highest first)
-    clientProfitability.sort((a, b) => b.totalRevenue - a.totalRevenue)
+    // Sort by net profit (highest first) to show most profitable clients at the top
+    clientProfitability.sort((a, b) => b.netProfit - a.netProfit)
 
     console.log(`Profitability calculation complete. Processed ${clientProfitability.length} clients`)
-    console.log('Sample results:', clientProfitability.slice(0, 3))
+    console.log('Sample results:', clientProfitability.slice(0, 3).map(client => ({
+      name: client.name,
+      totalRevenue: client.totalRevenue,
+      stripeFees: client.stripeFees,
+      totalRefunds: client.totalRefunds,
+      netProfit: client.netProfit,
+      transactionCount: client.transactionCount,
+      refundCount: client.refundCount
+    })))
 
     return new Response(
       JSON.stringify(clientProfitability),

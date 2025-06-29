@@ -251,6 +251,9 @@ The project includes three Supabase Edge Functions:
 ### Deploying Edge Functions
 
 ```bash
+# Deploy the updated stripe-profitability function
+supabase functions deploy stripe-profitability
+
 # Deploy all functions
 supabase functions deploy
 
@@ -271,6 +274,9 @@ supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret_here
 
 # Required for OAuth callback
 supabase secrets set FRONTEND_URL=http://localhost:5173
+
+# For production, also set the service role key
+supabase secrets set SERVICE_ROLE_KEY=your_service_role_key_here
 ```
 
 ## Production Setup
@@ -285,8 +291,21 @@ supabase secrets set FRONTEND_URL=http://localhost:5173
 
 1. Stripe events trigger webhooks to the `stripe-webhook` Edge Function
 2. Edge Functions process events and update Supabase tables
-3. Dashboard displays real-time profitability calculations
+3. The `stripe-profitability` Edge Function calculates client metrics including refunds
 4. Users can analyze client performance and optimize pricing
+
+### Profitability Calculation
+
+The `stripe-profitability` Edge Function calculates comprehensive client metrics:
+
+- **Total Revenue**: Sum of all successful payments
+- **Stripe Fees**: Calculated fees (2.9% + $0.30 per transaction)
+- **Total Refunds**: Sum of all refunds issued to the client
+- **Net Profit**: Revenue - Fees - Refunds
+- **Transaction Count**: Number of successful payments
+- **Refund Count**: Number of refunds processed
+
+Results are sorted by net profit (highest first) to prioritize the most profitable clients.
 
 ## Deployment
 
