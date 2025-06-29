@@ -570,6 +570,8 @@ const SettingsPage: React.FC = () => {
                       <li>Go to "Developers" → "API keys"</li>
                       <li>Copy your "Publishable key" (starts with pk_test_ or pk_live_)</li>
                       <li>For Connect: Go to "Connect" → "Settings" and copy your "Client ID" (starts with ca_)</li>
+                      <li>Enable OAuth in Stripe: Go to "Settings" → "Connect" → "Onboarding"</li>
+                      <li>Add this redirect URI: <code className="bg-blue-100 px-1 py-0.5 rounded text-xs font-mono">{import.meta.env.VITE_SUPABASE_URL || 'https://kcpgaavzznnvrnnvhdvo.supabase.co'}/functions/v1/stripe-connect-callback</code></li>
                     </ol>
                   </div>
                 </div>
