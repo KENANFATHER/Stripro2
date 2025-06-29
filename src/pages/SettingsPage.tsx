@@ -25,6 +25,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CreditCard, User, Bell, Shield, Save, Eye, EyeOff, CheckCircle, AlertTriangle, Key, TestTube } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { stripeService } from '../services/stripe';
@@ -32,6 +33,8 @@ import { stripeService } from '../services/stripe';
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
   const { showNotification } = useNotification();
+  const location = useLocation();
+  const navigate = useNavigate();
   
   const [activeSection, setActiveSection] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
@@ -67,6 +70,61 @@ const SettingsPage: React.FC = () => {
     newPassword: '',
     confirmPassword: ''
   });
+
+  // Handle Stripe Connect OAuth callback
+  useEffect(() => {
+    const handleStripeConnectCallback = async () => {
+      const urlParams = new URLSearchParams(location.search);
+      const stripeConnected = urlParams.get('stripe_connected');
+      const stripeAccountId = urlParams.get('stripe_account_id');
+      const stripeError = urlParams.get('stripe_error');
+      const stripeErrorDescription = urlParams.get('stripe_error_description');
+
+      // Handle successful Stripe Connect
+      if (stripeConnected === 'true' && stripeAccountId) {
+        console.log('[SettingsPage] Stripe Connect successful:', { stripeAccountId });
+        
+        showNotification(
+          'success',
+          'Stripe Connected Successfully!',
+          `Your Stripe account (${stripeAccountId}) has been connected. The sidebar status will update shortly.`
+        );
+
+        // Refresh the user session to get updated metadata
+        try {
+          const { refreshSession } = useAuth();
+          await refreshSession();
+          console.log('[SettingsPage] User session refreshed after Stripe Connect');
+        } catch (error) {
+          console.error('[SettingsPage] Failed to refresh session:', error);
+          showNotification(
+            'warning',
+            'Connection Successful',
+            'Stripe connected successfully, but you may need to refresh the page to see the updated status.'
+          );
+        }
+
+        // Clean up URL parameters
+        navigate(location.pathname, { replace: true });
+      }
+
+      // Handle Stripe Connect errors
+      if (stripeError) {
+        console.error('[SettingsPage] Stripe Connect error:', { stripeError, stripeErrorDescription });
+        
+        showNotification(
+          'error',
+          'Stripe Connection Failed',
+          stripeErrorDescription || `Error: ${stripeError}. Please try connecting again.`
+        );
+
+        // Clean up URL parameters
+        navigate(location.pathname, { replace: true });
+      }
+    };
+
+    handleStripeConnectCallback();
+  }, [location.search, navigate, showNotification]);
 
   // Load existing Stripe keys on component mount
   useEffect(() => {

@@ -160,6 +160,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   /**
+   * Update security events for monitoring
+   * Security: Adds new security events to the audit trail
+   */
+  const updateSecurityEvents = () => {
+    // TODO: Implement security event fetching from Supabase
+    // This would typically fetch recent security events for the current user
+    // For now, we'll just log that the function was called
+    console.log('[AuthContext] Security events updated');
+  };
+
+  /**
    * Enhanced login with security features
    * Security: Includes rate limiting, MFA support, and session management
    */
