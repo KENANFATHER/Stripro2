@@ -18,13 +18,11 @@
  * - Outputs sitemap.xml to public directory
  */
 
-import 'dotenv/config';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { createWriteStream } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createClient } from '@supabase/supabase-js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -81,6 +79,7 @@ async function generateDynamicRoutes() {
   const dynamicRoutes = [];
   
   try {
+    import { createClient } from '@supabase/supabase-js';
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,
       process.env.VITE_SUPABASE_ANON_KEY
@@ -137,9 +136,6 @@ async function generateSitemap() {
     const writeStream = createWriteStream(OUTPUT_PATH);
     sitemap.pipe(writeStream);
     
-    // Set up stream promise before writing anything
-    const streamPromise = streamToPromise(sitemap);
-    
     // Add static routes
     console.log(`📄 Adding ${staticRoutes.length} static routes...`);
     staticRoutes.forEach(route => {
@@ -161,7 +157,7 @@ async function generateSitemap() {
     sitemap.end();
     
     // Wait for the stream to finish
-    await streamPromise;
+    await streamToPromise(sitemap);
     
     console.log('✅ Sitemap generated successfully!');
     console.log(`📊 Total URLs: ${staticRoutes.length + dynamicRoutes.length}`);
