@@ -574,7 +574,6 @@ const SettingsPage: React.FC = () => {
                           </button>
                         )}
                       </div>
-                      )}
                     </div>
                   </div>
                   
@@ -871,8 +870,6 @@ const SettingsPage: React.FC = () => {
                       This action cannot be undone.
                     </p>
                     <button 
-                      onClick={handleManageApiKeys}
-                      data-testid="manage-api-keys-security"
                       onClick={() => setShowDataDeletionDialog(true)}
                       className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
                     >
