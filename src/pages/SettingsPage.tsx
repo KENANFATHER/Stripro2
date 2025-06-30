@@ -1060,10 +1060,7 @@ const SettingsPage: React.FC = () => {
             We typically respond within 24 hours during business days.
           </p>
           <p className="text-blue-700 text-sm mt-2">
-            For data protection inquiries, contact our DPO at{' '}
-            <a href="mailto:dpo@stripro.com" className="underline hover:no-underline">
-              dpo@stripro.com
-            </a>
+            For data protection inquiries, contact our support team.
           </p>
         </div>
       </div>
