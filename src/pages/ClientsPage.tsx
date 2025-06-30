@@ -165,7 +165,7 @@ const ClientsPage: React.FC = () => {
       </div>
 
       {/* Loading State */}
-      {clientsLoading && (
+      {loading && (
         <LoadingState 
           message="Loading clients..." 
           size="large" 
@@ -174,11 +174,16 @@ const ClientsPage: React.FC = () => {
       )}
 
       {/* Error State */}
-      {clientsError && (
+      {error && (
         <ErrorState
           title="Error loading clients"
-          message={clientsError}
-          onRetry={() => fetchClients(() => clientService.getClients(filters))}
+          message={error}
+          onRetry={() => fetchClients(() => clientService.getClients({
+            search: debouncedSearchTerm || undefined,
+            status: statusFilter === 'all' ? undefined : statusFilter,
+            sortBy: sortField,
+            sortOrder: sortDirection
+          }))}
           className="mb-6"
         />
       )}
@@ -197,7 +202,7 @@ const ClientsPage: React.FC = () => {
           </div>
         }
       >
-        {clients && clients.length > 0 && !clientsLoading && (
+        {clients && clients.length > 0 && !loading && (
           <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {clients.map((client) => (
             <div key={client.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
@@ -272,7 +277,7 @@ const ClientsPage: React.FC = () => {
       </ErrorBoundary>
 
       {/* Empty State */}
-      {clients && clients.length === 0 && !clientsLoading && !clientsError && (
+      {clients && clients.length === 0 && !loading && !error && (
         <EmptyState
           title="No clients found"
           description={searchTerm || statusFilter !== 'all' ? 
