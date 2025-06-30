@@ -16,3 +16,4 @@ export { default as ClientsPage } from './ClientsPage';
 export { default as AddDataPage } from './AddDataPage';
 export { default as SettingsPage } from './SettingsPage';
 export { default as AuthCallbackPage } from './AuthCallbackPage';
+export { default as LandingPage } from './LandingPage';
