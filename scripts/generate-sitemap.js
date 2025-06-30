@@ -136,6 +136,9 @@ async function generateSitemap() {
     const writeStream = createWriteStream(OUTPUT_PATH);
     sitemap.pipe(writeStream);
     
+    // Set up stream promise before writing anything
+    const streamPromise = streamToPromise(sitemap);
+    
     // Add static routes
     console.log(`📄 Adding ${staticRoutes.length} static routes...`);
     staticRoutes.forEach(route => {
@@ -157,7 +160,7 @@ async function generateSitemap() {
     sitemap.end();
     
     // Wait for the stream to finish
-    await streamToPromise(sitemap);
+    await streamPromise;
     
     console.log('✅ Sitemap generated successfully!');
     console.log(`📊 Total URLs: ${staticRoutes.length + dynamicRoutes.length}`);
