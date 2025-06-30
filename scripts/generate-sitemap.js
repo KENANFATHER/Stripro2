@@ -23,6 +23,7 @@ import { createWriteStream } from 'fs';
 import { resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 // Get current directory for ES modules
 const __filename = fileURLToPath(import.meta.url);
@@ -79,7 +80,6 @@ async function generateDynamicRoutes() {
   const dynamicRoutes = [];
   
   try {
-    import { createClient } from '@supabase/supabase-js';
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,
       process.env.VITE_SUPABASE_ANON_KEY
