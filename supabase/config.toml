@@ -1,12 +1,19 @@
+# Supabase project configuration
 # This file configures Edge Functions at the project level
-# It overrides function-specific settings
 
 [functions]
-  [functions.stripe-connect-callback]
-    verify_jwt = false
+  # Stripe webhook handler - no JWT verification needed for webhooks
   [functions.stripe-webhook]
     verify_jwt = false
+  
+  # Stripe Connect callback - no JWT verification needed for OAuth callbacks
+  [functions.stripe-connect-callback]
+    verify_jwt = false
+  
+  # Stripe profitability analytics - requires authentication
   [functions.stripe-profitability]
-    verify_jwt = false
+    verify_jwt = true
+  
+  # Stripe disconnect handler - requires authentication
   [functions.stripe-disconnect]
-    verify_jwt = false
+    verify_jwt = true
