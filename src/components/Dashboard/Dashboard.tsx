@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { StatsCard } from './StatsCard';
-import { ClientTable } from './ClientTable';
+import ClientTable from './ClientTable';
 import { useApi } from '../../hooks/useApi';
 import { useNotification } from '../../contexts/NotificationContext';
 import { LoadingSpinner } from '../UI/LoadingSpinner';
