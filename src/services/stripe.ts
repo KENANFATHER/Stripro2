@@ -472,6 +472,7 @@ export class StripeService {
   async disconnectStripeAccount(stripeAccountId: string): Promise<{
     success: boolean;
     message: string;
+    error?: string;
   }> {
     try {
       if (!this.connectClientId) {
@@ -481,36 +482,76 @@ export class StripeService {
       console.log('Initiating Stripe account disconnection for account:', stripeAccountId);
 
       // Call Stripe's OAuth deauthorization endpoint
-      // This properly removes the authorization between our platform and the connected account
-      const deauthorizeResponse = await fetch('https://connect.stripe.com/oauth/deauthorize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          client_id: this.connectClientId,
-          stripe_user_id: stripeAccountId,
-        }),
-      });
+      try {
+        // This properly removes the authorization between our platform and the connected account
+        const deauthorizeResponse = await fetch('https://connect.stripe.com/oauth/deauthorize', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: new URLSearchParams({
+            client_id: this.connectClientId,
+            stripe_user_id: stripeAccountId,
+          }),
+        });
 
-      if (!deauthorizeResponse.ok) {
-        const errorData = await deauthorizeResponse.text();
-        console.error('Stripe deauthorization failed:', errorData);
-        
-        // If the account is already disconnected or doesn't exist, consider it a success
-        if (deauthorizeResponse.status === 404 || errorData.includes('already_disconnected')) {
-          console.log('Account was already disconnected or not found');
-          return {
-            success: true,
-            message: 'Stripe account was already disconnected or not found'
-          };
+        if (!deauthorizeResponse.ok) {
+          const errorData = await deauthorizeResponse.text();
+          console.error('Stripe deauthorization failed:', errorData);
+          
+          // If the account is already disconnected or doesn't exist, consider it a success
+          if (deauthorizeResponse.status === 404 || errorData.includes('already_disconnected')) {
+            console.log('Account was already disconnected or not found');
+            return {
+              success: true,
+              message: 'Stripe account was already disconnected or not found'
+            };
+          }
+          
+          throw new Error(`Failed to deauthorize Stripe account: ${errorData}`);
         }
-        
-        throw new Error(`Failed to deauthorize Stripe account: ${errorData}`);
-      }
 
-      const deauthorizeData = await deauthorizeResponse.json();
-      console.log('Stripe deauthorization successful:', deauthorizeData);
+        const deauthorizeData = await deauthorizeResponse.json();
+        console.log('Stripe deauthorization successful:', deauthorizeData);
+      } catch (deauthError) {
+        console.error('Error during Stripe deauthorization:', deauthError);
+        
+        // Try using the Edge Function as a fallback
+        try {
+          const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+          if (!supabaseUrl) {
+            throw new Error('Supabase URL not configured');
+          }
+          
+          const disconnectResponse = await fetch(`${supabaseUrl}/functions/v1/stripe-disconnect`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY || ''}`,
+            },
+            body: JSON.stringify({
+              stripeAccountId,
+              userId: 'client-side-request', // Will be overridden by the function
+              reason: 'user_requested_via_ui'
+            }),
+          });
+          
+          if (!disconnectResponse.ok) {
+            const errorData = await disconnectResponse.text();
+            throw new Error(`Edge function disconnect failed: ${errorData}`);
+          }
+          
+          const disconnectData = await disconnectResponse.json();
+          console.log('Stripe disconnection via Edge Function successful:', disconnectData);
+          
+          if (!disconnectData.success) {
+            throw new Error(disconnectData.message || 'Unknown error from Edge Function');
+          }
+        } catch (edgeFunctionError) {
+          console.error('Edge Function fallback also failed:', edgeFunctionError);
+          throw new Error(`Stripe disconnection failed: ${deauthError.message}. Edge Function fallback also failed: ${edgeFunctionError.message}`);
+        }
+      }
 
       return {
         success: true,
@@ -520,8 +561,9 @@ export class StripeService {
     } catch (error) {
       console.error('Failed to disconnect Stripe account:', error);
       return {
-        success: false,
-        message: error instanceof Error ? error.message : 'Failed to disconnect Stripe account'
+        success: false, 
+        message: 'Failed to disconnect Stripe account',
+        error: error instanceof Error ? error.message : 'Unknown error'
       };
     }
   }

@@ -10,7 +10,11 @@
     },
     {
       "name": "stripe-profitability",
-      "verify_jwt": true
+      "verify_jwt": false
+    },
+    {
+      "name": "stripe-disconnect",
+      "verify_jwt": false
     }
   ]
 }

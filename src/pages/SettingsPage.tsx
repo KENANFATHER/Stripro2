@@ -298,6 +298,13 @@ const SettingsPage: React.FC = () => {
   const handleDisconnectStripe = async () => {
     setIsDisconnecting(true);
     
+    // Show a notification that the process has started
+    showNotification(
+      'info',
+      'Disconnecting Stripe',
+      'Please wait while we disconnect your Stripe account...'
+    );
+    
     try {
       if (!stripeConnectionStatus.accountId) {
         throw new Error('No Stripe account found to disconnect');
@@ -306,13 +313,17 @@ const SettingsPage: React.FC = () => {
       // Call the Stripe disconnect service
       const disconnectResult = await stripeService.disconnectStripeAccount(stripeConnectionStatus.accountId);
       
-      if (!disconnectResult.success) {
+      if (!disconnectResult.success && !disconnectResult.error?.includes('already_disconnected')) {
         throw new Error(disconnectResult.message);
       }
 
+      // Update Supabase user metadata to remove Stripe connection
+      const { supabaseAuthService } = await import('../services/supabaseAuthService');
+      await supabaseAuthService.disconnectStripeAccount();
+      
       // Clear local Stripe data
       stripeService.clearStripeIntegrationData();
-      
+
       // Update connection status
       setStripeConnectionStatus({
         isConnected: false,
@@ -321,8 +332,8 @@ const SettingsPage: React.FC = () => {
       
       showNotification(
         'success',
-        'Stripe Disconnected',
-        disconnectResult.message
+        'Stripe Account Disconnected',
+        'Your Stripe account has been successfully disconnected from Stripro.'
       );
       
       setShowDisconnectDialog(false);
@@ -331,7 +342,7 @@ const SettingsPage: React.FC = () => {
       showNotification(
         'error',
         'Disconnect Failed',
-        errorMessage
+        `${errorMessage}. Please try again or contact support if the issue persists.`
       );
     } finally {
       setIsDisconnecting(false);
@@ -525,7 +536,9 @@ const SettingsPage: React.FC = () => {
                         <p className="font-medium text-sage-900">Stripe Account Status</p>
                         <p className="text-sm text-sage-600">
                           {isCheckingStatus ? 'Checking status...' : 
-                           stripeConnectionStatus.isConnected ? 'Connected and active' : 'Not connected'}
+                           stripeConnectionStatus.isConnected ? 'Connected and active' : 
+                           stripeConfig.isConfigured ? 'API keys configured, not connected' : 
+                           'Not configured'}
                         </p>
                         {stripeConnectionStatus.lastChecked && (
                           <p className="text-xs text-sage-500">

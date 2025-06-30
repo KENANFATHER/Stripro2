@@ -1,0 +1,12 @@
+# This file configures Edge Functions at the project level
+# It overrides function-specific settings
+
+[functions]
+  [functions.stripe-connect-callback]
+    verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.stripe-profitability]
+    verify_jwt = false
+  [functions.stripe-disconnect]
+    verify_jwt = false
