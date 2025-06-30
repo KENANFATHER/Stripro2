@@ -23,9 +23,10 @@
  * - Fee calculation utilities
  */
 
-import React, { useState } from 'react';
-import { Plus, Save, X, Calculator } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Save, X, Calculator, Upload, FileText } from 'lucide-react';
 import { useNotification } from '../contexts/NotificationContext';
+import { EmptyState, ErrorState } from '../components/UI';
 
 interface FormData {
   clientName: string;
@@ -47,6 +48,31 @@ const AddDataPage: React.FC = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Simulate fetching transactions
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      setIsLoading(true);
+      setError(null);
+      
+      try {
+        // Simulate API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // For demo purposes, return empty array
+        setTransactions([]);
+      } catch (err) {
+        setError('Failed to load transaction history');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchTransactions();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -272,19 +298,53 @@ const AddDataPage: React.FC = () => {
         </form>
 
         {/* Bulk Import Section */}
-        <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Bulk Import</h3>
-          <p className="text-gray-600 mb-4">
-            Import multiple transactions from a CSV file. Download our template to get started.
-          </p>
-          <div className="flex space-x-3">
-            <button className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-              Download Template
-            </button>
-            <button className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-              Upload CSV
-            </button>
-          </div>
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Transaction History</h3>
+          
+          {error && (
+            <ErrorState
+              message={error}
+              onRetry={() => {
+                setIsLoading(true);
+                setError(null);
+                // Simulate API call
+                setTimeout(() => {
+                  setTransactions([]);
+                  setIsLoading(false);
+                }, 1000);
+              }}
+              className="mb-6"
+            />
+          )}
+          
+          {!isLoading && !error && transactions.length === 0 && (
+            <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <EmptyState
+                title="No transaction history"
+                description="You haven't added any transactions yet. Use the form above to add your first transaction."
+                icon={FileText}
+                variant="subtle"
+                className="mx-auto"
+              />
+              
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <h4 className="font-medium text-gray-900 mb-4">Bulk Import</h4>
+                <p className="text-gray-600 mb-4">
+                  Import multiple transactions from a CSV file. Download our template to get started.
+                </p>
+                <div className="flex space-x-3">
+                  <button className="flex items-center space-x-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+                    <FileText className="w-4 h-4" />
+                    <span>Download Template</span>
+                  </button>
+                  <button className="flex items-center space-x-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                    <Upload className="w-4 h-4" />
+                    <span>Upload CSV</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

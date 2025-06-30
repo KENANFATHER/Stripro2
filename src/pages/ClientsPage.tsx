@@ -24,10 +24,12 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Download, Eye, Plus } from 'lucide-react';
+import { Search, Filter, Download, Eye, Plus, Users, AlertOctagon } from 'lucide-react';
 import { Client } from '../types';
 import { clientService } from '../services';
 import { useApi, useDebounce } from '../hooks';
+import { EmptyState, LoadingState, ErrorState } from '../components/UI';
+import { ErrorBoundary } from '../components';
 
 const ClientsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -163,16 +165,40 @@ const ClientsPage: React.FC = () => {
       </div>
 
       {/* Loading State */}
-      {loading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="ml-3 text-gray-600">Loading clients...</span>
-        </div>
+      {clientsLoading && (
+        <LoadingState 
+          message="Loading clients..." 
+          size="large" 
+          className="py-12"
+        />
       )}
 
-      {/* Clients Grid */}
-      {clients && clients.length > 0 && !loading && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      {/* Error State */}
+      {clientsError && (
+        <ErrorState
+          title="Error loading clients"
+          message={clientsError}
+          onRetry={() => fetchClients(() => clientService.getClients(filters))}
+          className="mb-6"
+        />
+      )}
+
+      {/* Clients Grid with Error Boundary */}
+      <ErrorBoundary
+        fallback={
+          <div className="p-6 bg-red-50 border border-red-200 rounded-xl">
+            <div className="flex items-center space-x-3">
+              <AlertOctagon className="w-6 h-6 text-red-500" />
+              <div>
+                <h3 className="text-lg font-medium text-red-800">Component Error</h3>
+                <p className="text-red-700">There was an error rendering the clients grid. Please try refreshing the page.</p>
+              </div>
+            </div>
+          </div>
+        }
+      >
+        {clients && clients.length > 0 && !clientsLoading && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {clients.map((client) => (
             <div key={client.id} className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-shadow">
               <div className="flex items-start justify-between mb-4">
@@ -242,19 +268,24 @@ const ClientsPage: React.FC = () => {
             </div>
           ))}
         </div>
-      )}
+        )}
+      </ErrorBoundary>
 
       {/* Empty State */}
-      {clients && clients.length === 0 && !loading && (
-        <div className="text-center py-12">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No clients found</h3>
-          <p className="text-gray-600">
-            Try adjusting your search terms or filters to find what you're looking for.
-          </p>
-        </div>
+      {clients && clients.length === 0 && !clientsLoading && !clientsError && (
+        <EmptyState
+          title="No clients found"
+          description={searchTerm || statusFilter !== 'all' ? 
+            "Try adjusting your search terms or filters to find what you're looking for." : 
+            "You don't have any clients yet. Add your first client to get started."}
+          icon={searchTerm || statusFilter !== 'all' ? Search : Users}
+          action={searchTerm || statusFilter !== 'all' ? undefined : {
+            label: "Add First Client",
+            onClick: () => console.log("Add client clicked")
+          }}
+          size="large"
+          className="py-12 mx-auto"
+        />
       )}
     </div>
   );

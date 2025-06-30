@@ -22,14 +22,16 @@
  */
 
 import React, { useState } from 'react';
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, Users } from 'lucide-react';
 import { Client, SortConfig } from '../../types';
+import { EmptyState } from '../UI';
 
 interface ClientTableProps {
   clients: Client[];
+  isLoading?: boolean;
 }
 
-const ClientTable: React.FC<ClientTableProps> = ({ clients }) => {
+const ClientTable: React.FC<ClientTableProps> = ({ clients, isLoading = false }) => {
   const [sortConfig, setSortConfig] = useState<SortConfig<Client>>({
     field: 'totalRevenue',
     direction: 'desc'
@@ -78,6 +80,24 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients }) => {
       <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-sage-200 bg-gradient-soft">
         <h3 className="text-lg sm:text-xl font-bold text-sage-900">Client Profitability</h3>
         <p className="text-sm text-sage-600 mt-1">Revenue, fees, and net profit by client</p>
+      </div>
+      
+      {clients.length === 0 && !isLoading && (
+        <div className="p-6">
+          <EmptyState
+            title="No clients found"
+            description="You don't have any clients yet. Connect your Stripe account or add clients manually to see profitability data."
+            icon={Users}
+            variant="subtle"
+            className="mx-auto"
+          />
+        </div>
+      )}
+      
+      {clients.length > 0 && (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
       </div>
       
       {/* Desktop Table View */}
@@ -242,6 +262,8 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients }) => {
           ))}
         </div>
       </div>
+        </>
+      )}
     </div>
   );
 };

@@ -22,3 +22,6 @@ export * from './UI';
 
 // Auth components
 export * from './Auth';
+
+// Error boundary
+export { default as ErrorBoundary } from './ErrorBoundary';

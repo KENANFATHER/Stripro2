@@ -19,14 +19,15 @@
  */
 
 import React from 'react';
-import { DollarSign, TrendingUp, CreditCard, Users, AlertTriangle } from 'lucide-react';
+import { DollarSign, TrendingUp, CreditCard, Users, AlertTriangle, BarChart3 } from 'lucide-react';
 import StatsCard from './StatsCard';
 import ClientTable from './ClientTable';
-import { useApi } from '../../hooks';
+import { useApi, useDebounce } from '../../hooks';
 import { clientService } from '../../services/api';
 import { Client, DashboardStats } from '../../types';
 import { useAuth } from '../../contexts/AuthContext';
 import { fallbackClients, fallbackDashboardStats } from '../../data/dummyData';
+import { EmptyState, LoadingState, ErrorState } from '../UI';
 
 const Dashboard: React.FC = () => {
   const { user } = useAuth();
@@ -116,6 +117,22 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {statsLoading ? (
+          Array(4).fill(0).map((_, index) => (
+            <div key={index} className="bg-white rounded-2xl border border-sage-200 p-4 sm:p-6 animate-pulse h-32">
+              <div className="h-4 bg-sage-200 rounded w-1/3 mb-4"></div>
+              <div className="h-6 bg-sage-200 rounded w-2/3 mb-2"></div>
+              <div className="h-4 bg-sage-200 rounded w-1/2"></div>
+            </div>
+          ))
+        ) : statsError ? (
+          <div className="col-span-full">
+            <ErrorState 
+              message={statsError || "Failed to load dashboard statistics"} 
+              onRetry={() => fetchStats(() => clientService.getDashboardStats())}
+            />
+          </div>
+        ) : (
         <StatsCard
           title="Total Revenue"
           value={formatCurrency(displayStats.totalRevenue)}
@@ -148,37 +165,35 @@ const Dashboard: React.FC = () => {
           icon={Users}
           iconColor="bg-gradient-to-br from-lilac-500 to-lilac-600"
         />
+        )}
       </div>
 
       {/* Loading State */}
       {(clientsLoading || statsLoading) && (
-        <div className="flex items-center justify-center py-12">
-          <div className="w-8 h-8 border-4 border-coral-600 border-t-transparent rounded-full animate-spin"></div>
-          <span className="ml-3 text-sage-600">Loading dashboard data...</span>
-        </div>
+        <LoadingState 
+          message="Loading dashboard data..." 
+          size="large" 
+          className="py-12"
+        />
       )}
 
       {/* Error State */}
       {(clientsError || statsError) && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-6">
-          <div className="flex items-start space-x-2">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <div>
-              <p className="text-yellow-800 font-medium">
-                Using fallback data
-              </p>
-              <p className="text-yellow-700 text-sm mt-1">
-                Unable to connect to the API server. Displaying sample data for demonstration.
-              </p>
-            </div>
-          </div>
-        </div>
+        <ErrorState
+          title="Using fallback data"
+          message="Unable to connect to the API server. Displaying sample data for demonstration."
+          variant="subtle"
+          className="mb-6"
+        />
       )}
 
       {/* Client Table */}
       {!clientsLoading && (
         <div className="overflow-x-auto">
-          <ClientTable clients={displayClients} />
+          <ClientTable 
+            clients={displayClients} 
+            isLoading={clientsLoading}
+          />
         </div>
       )}
 
@@ -192,28 +207,26 @@ const Dashboard: React.FC = () => {
         </p>
         
         {profitabilityLoading && (
-          <div className="flex items-center justify-center py-8">
-            <div className="w-6 h-6 border-3 border-coral-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="ml-2 text-sage-600">Loading profitability data from Edge Function...</span>
-          </div>
+          <LoadingState 
+            message="Loading profitability data from Edge Function..." 
+            className="py-8"
+          />
         )}
         
         {profitabilityError && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
-            <div className="flex items-start space-x-2">
-              <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-              <div>
-                <p className="text-red-800 font-medium">Error loading profitability data from Edge Function:</p>
-                <p className="text-red-700 text-sm mt-1">{profitabilityError}</p>
-                <p className="text-red-600 text-xs mt-2">
-                  Make sure your Supabase Edge Function is deployed and accessible at: 
-                  <code className="bg-red-100 px-1 rounded ml-1">
-                    {import.meta.env.VITE_SUPABASE_URL || 'https://kcpgaavzznnvrnnvhdvo.supabase.co'}/functions/v1/stripe-profitability
-                  </code>
-                </p>
-              </div>
-            </div>
-          </div>
+          <ErrorState
+            title="Error loading profitability data from Edge Function"
+            message={`${profitabilityError} Make sure your Supabase Edge Function is deployed and accessible at: ${import.meta.env.VITE_SUPABASE_URL || 'https://kcpgaavzznnvrnnvhdvo.supabase.co'}/functions/v1/stripe-profitability`}
+            onRetry={() => {
+              setProfitabilityLoading(true);
+              setProfitabilityError(null);
+              clientService.getProfitabilityFromEdgeFunction(user?.stripeAccountId)
+                .then(data => setProfitabilityData(data))
+                .catch(err => setProfitabilityError(err instanceof Error ? err.message : 'Failed to fetch profitability data'))
+                .finally(() => setProfitabilityLoading(false));
+            }}
+            className="mb-6"
+          />
         )}
         
         {profitabilityData && profitabilityData.length > 0 && (
@@ -336,17 +349,13 @@ const Dashboard: React.FC = () => {
         )}
         
         {profitabilityData && profitabilityData.length === 0 && !profitabilityLoading && (
-          <div className="text-center py-8 bg-white rounded-xl border border-sage-200">
-            <div className="text-sage-600">
-              <p className="text-lg font-medium mb-2">No profitability data found</p>
-              <p className="text-sm">Your Edge Function returned an empty result. This could mean:</p>
-              <ul className="text-sm mt-2 space-y-1">
-                <li>• No Stripe customers or charges found</li>
-                <li>• Edge Function needs Stripe API key configuration</li>
-                <li>• Edge Function is still processing data</li>
-              </ul>
-            </div>
-          </div>
+          <EmptyState
+            title="No profitability data found"
+            description="Your Edge Function returned an empty result. This could mean: No Stripe customers or charges found, Edge Function needs Stripe API key configuration, or Edge Function is still processing data."
+            icon={BarChart3}
+            className="py-8 mx-auto"
+            variant="card"
+          />
         )}
       </div>
     </div>
