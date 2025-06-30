@@ -279,7 +279,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         showNotification(
           'info',
           'Please Check Your Email',
-          `We've sent a verification link to ${credentials.email}. Please click the link to activate your account and complete the sign-up process.`
+          `We've sent a verification link to ${credentials.email}. Please click the link to activate your account and complete the sign-up process.You will receive a confirmation email in ~60 seconds`
         );
         
         return {
