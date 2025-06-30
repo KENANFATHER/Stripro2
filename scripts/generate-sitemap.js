@@ -18,6 +18,7 @@
  * - Outputs sitemap.xml to public directory
  */
 
+import 'dotenv/config';
 import { SitemapStream, streamToPromise } from 'sitemap';
 import { createWriteStream } from 'fs';
 import { resolve } from 'path';
