@@ -37,6 +37,12 @@ const SettingsPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingStripe, setIsTestingStripe] = useState(false);
 
+  // Dialog state
+  const [showDataDeletionDialog, setShowDataDeletionDialog] = useState(false);
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [dataDeletionReason, setDataDeletionReason] = useState('');
+
   // Profile data state
   const [profileData, setProfileData] = useState({
     name: user?.name || '',
@@ -234,6 +240,59 @@ const SettingsPage: React.FC = () => {
         'Connection Failed',
         errorMessage
       );
+    }
+  };
+
+  const handleDisconnectStripe = async () => {
+    setIsDisconnecting(true);
+    
+    try {
+      // TODO: Implement actual Stripe disconnect logic
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      showNotification(
+        'success',
+        'Stripe Disconnected',
+        'Your Stripe account has been disconnected successfully.'
+      );
+      
+      setShowDisconnectDialog(false);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to disconnect Stripe';
+      showNotification(
+        'error',
+        'Disconnect Failed',
+        errorMessage
+      );
+    } finally {
+      setIsDisconnecting(false);
+    }
+  };
+
+  const handleRequestDataDeletion = async () => {
+    setIsSaving(true);
+    
+    try {
+      // TODO: Implement actual data deletion request logic
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      showNotification(
+        'success',
+        'Data Deletion Requested',
+        'Your data deletion request has been submitted. You will receive confirmation via email.'
+      );
+      
+      setShowDataDeletionDialog(false);
+      setDataDeletionReason('');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to submit data deletion request';
+      showNotification(
+        'error',
+        'Request Failed',
+        errorMessage
+      );
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -737,34 +796,6 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       )}
-      {/* Support Information */}
-      <div className="mt-8 pt-6 border-t border-sage-200 max-w-4xl">
-        <h4 className="text-lg font-semibold text-sage-900 mb-4">Need Help?</h4>
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <p className="text-blue-800 mb-2">
-            If you have any questions or need assistance, please contact our support team:
-          </p>
-          <a 
-            href="mailto:support@stripe.online" 
-            className="text-blue-600 font-medium hover:underline"
-          >
-            support@stripe.online
-          </a>
-          <p className="text-blue-700 text-sm mt-2">
-            We typically respond within 24 hours during business days.
-          </p>
-          <p className="text-blue-700 text-sm mt-2">
-            For data protection inquiries, contact our DPO at{' '}
-            <a href="mailto:dpo@stripro.com" className="underline hover:no-underline">
-              dpo@stripro.com
-            </a>
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
       {/* GDPR Data Deletion Dialog */}
       {showDataDeletionDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -836,4 +867,33 @@ const SettingsPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Support Information */}
+      <div className="mt-8 pt-6 border-t border-sage-200 max-w-4xl">
+        <h4 className="text-lg font-semibold text-sage-900 mb-4">Need Help?</h4>
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+          <p className="text-blue-800 mb-2">
+            If you have any questions or need assistance, please contact our support team:
+          </p>
+          <a 
+            href="mailto:support@stripe.online" 
+            className="text-blue-600 font-medium hover:underline"
+          >
+            support@stripe.online
+          </a>
+          <p className="text-blue-700 text-sm mt-2">
+            We typically respond within 24 hours during business days.
+          </p>
+          <p className="text-blue-700 text-sm mt-2">
+            For data protection inquiries, contact our DPO at{' '}
+            <a href="mailto:dpo@stripro.com" className="underline hover:no-underline">
+              dpo@stripro.com
+            </a>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 export default SettingsPage;
