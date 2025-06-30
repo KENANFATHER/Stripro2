@@ -192,9 +192,9 @@ const Dashboard: React.FC = () => {
       {/* Client Table */}
       {!clientsLoading && (
         <div className="overflow-x-auto">
-          <ClientTable 
-            clients={displayClients} 
-            isLoading={clientsLoading}
+          <ClientTable
+            clients={profitabilityData || displayClients}
+            isLoading={profitabilityLoading || clientsLoading}
           />
         </div>
       )}
