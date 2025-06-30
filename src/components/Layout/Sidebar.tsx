@@ -26,7 +26,7 @@
 
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, Plus, Settings, LogOut, CreditCard, Users, Menu, X } from 'lucide-react';
+import { BarChart3, Plus, Settings, LogOut, CreditCard, Users, Menu, X, TestTube } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface NavigationItem {
