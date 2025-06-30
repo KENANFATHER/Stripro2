@@ -15,6 +15,7 @@ export const config = { auth: false }
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
 }
 
 serve(async (req) => {
@@ -26,6 +27,10 @@ serve(async (req) => {
   try {
     // Check for required environment variables
     const missingEnvVars = []
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.FRONTEND_URL)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.FRONTEND_URL)
+    }
     
     if (!Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)) {
       missingEnvVars.push(REQUIRED_ENV_VARS.SUPABASE_URL)
