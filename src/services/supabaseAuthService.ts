@@ -800,7 +800,7 @@ class SupabaseAuthService {
   }> {
     try {
       // First, attempt to deauthorize through Stripe
-      const { stripeService } = await import('../stripe');
+      const { stripeService } = await import('./stripe');
       const deauthorizeResult = await stripeService.disconnectStripeAccount(stripeAccountId);
       
       // Update user metadata regardless of deauthorization result
