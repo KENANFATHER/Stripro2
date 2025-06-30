@@ -47,7 +47,7 @@ const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${import.meta.env.VITE_SITE_URL || window.location.origin}/auth/callback`,
+          redirectTo: `${window.location.origin}/auth/callback`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

@@ -341,12 +341,28 @@ export class UserGraphQLService {
     sortOrder?: 'asc' | 'desc';
   } = {}): Promise<ListResponse<User>> {
     try {
-      const result = await graphqlClient.query<{ users: ListResponse<User> }>(
+      // TODO: Replace with real GraphQL query
+      // const result = await graphqlClient.query<{ users: ListResponse<User> }>(
+      //   GET_USERS,
+      //   { variables, cache: true }
+      // );
+      // return result.users;
+
+      // MOCK IMPLEMENTATION
+      console.log('[MOCK] UserGraphQLService.getUsers called with variables:', variables);
+      
+      const mockResult = await graphqlClient.query<{ users: ListResponse<User> }>(
         GET_USERS,
         { variables, cache: true }
       );
       
-      return result.users;
+      return mockResult.users || {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: 10,
+        hasMore: false
+      };
 
     } catch (error) {
       console.error('Error fetching users via GraphQL:', error);

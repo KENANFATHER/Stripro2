@@ -21,12 +21,35 @@ const StripeTestPage: React.FC = () => {
 
   const handleConnectStripe = async () => {
     try {
-      // Implementation removed for production
+      const config = stripeService.getConfigInfo();
+      
+      if (!config.hasConnectClientId) {
+        showNotification(
+          'error',
+          'Configuration Missing',
+          'Stripe Connect client ID not configured. Please add it in the Settings page.'
+        );
+        return;
+      }
+      
+      if (!config.hasPublishableKey) {
+        showNotification(
+          'error',
+          'Configuration Missing',
+          'Stripe publishable key not configured. Please add it in the Settings page.'
+        );
+        return;
+      }
+      
       showNotification(
-        'warning',
-        'Test Mode Disabled',
-        'Stripe test functionality has been disabled in production.'
+        'info',
+        'Connecting to Stripe',
+        'Redirecting to Stripe to connect your account...'
       );
+
+      const state = `test_${Date.now()}`;
+      await stripeService.initiateStripeConnect(state);
+      
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to connect Stripe';
       showNotification(
@@ -40,11 +63,19 @@ const StripeTestPage: React.FC = () => {
   const handleTestApiKey = async () => {
     setIsLoading(true);
     try {
-      // Implementation removed for production
+      const result = await stripeService.testApiKey();
+      
+      setTestResults(prev => ({
+        ...prev,
+        apiKeyTest: result
+      }));
+      
       showNotification(
-        'warning',
-        'Test Mode Disabled',
-        'Stripe test functionality has been disabled in production.'
+        result.valid ? 'success' : 'error',
+        result.valid ? 'API Key Valid' : 'API Key Invalid',
+        result.valid 
+          ? 'Your Stripe API key is valid and working correctly.' 
+          : result.error || 'Unknown error'
       );
     } catch (error) {
       showNotification(

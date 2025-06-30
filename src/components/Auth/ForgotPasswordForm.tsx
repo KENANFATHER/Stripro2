@@ -68,8 +68,8 @@ const ForgotPasswordForm: React.FC<ForgotPasswordFormProps> = ({
     setError('');
 
     try {
-      // Real API call for password reset
-      await apiClient.post('/auth/password-reset', { email });
+      // Simulate API call for password reset
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       setIsSubmitted(true);
       onSuccess?.(email);

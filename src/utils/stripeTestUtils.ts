@@ -119,8 +119,8 @@ export async function simulateWebhookEvent(
  * Generate test customer data for Stripe
  */
 export function generateTestCustomer(
-  name: string = '',
-  email: string = ''
+  name: string = 'Test Customer',
+  email: string = 'test@example.com'
 ): any {
   return {
     id: `cus_test_${Date.now()}`,

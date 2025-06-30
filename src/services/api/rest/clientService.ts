@@ -50,8 +50,13 @@ class ClientService extends BaseApiService {
   async getClients(params: QueryParams = {}): Promise<ListResponse<Client>> {
     try {
       // Return empty client list as primary data comes from Edge Functions
-      const response = await this.get<ListResponse<Client>>(`/clients${this.buildQueryString(params)}`);
-      return response;
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        limit: params.limit || 50,
+        hasMore: false
+      };
 
     } catch (error) {
       console.error('Error fetching clients:', error);
@@ -318,8 +323,15 @@ class ClientService extends BaseApiService {
   async getDashboardStats(): Promise<DashboardStats> {
     try {
       // Return default stats as primary data comes from Edge Functions
-      const stats = await this.get<DashboardStats>('/dashboard/stats');
-      return stats;
+      return {
+        totalRevenue: 0,
+        totalFees: 0,
+        netProfit: 0,
+        activeClients: 0,
+        monthlyGrowth: 0,
+        transactionCount: 0,
+        averageTransactionValue: 0
+      };
 
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);

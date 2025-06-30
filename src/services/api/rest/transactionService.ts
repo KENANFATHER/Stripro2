@@ -62,6 +62,136 @@ class TransactionService extends BaseApiService {
    */
   async getTransactions(params: QueryParams = {}): Promise<ListResponse<Transaction>> {
     try {
+      // TODO: Replace this mock implementation with real API call
+      // const response = await this.get<ListResponse<Transaction>>(`/transactions${this.buildQueryString(params)}`);
+      // return response;
+
+      // MOCK IMPLEMENTATION - Remove this when implementing real API
+      console.log('[MOCK] TransactionService.getTransactions called with params:', params);
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 700));
+      
+      // Mock transaction data with realistic payment details
+      const mockTransactions: Transaction[] = [
+        {
+          id: '1',
+          clientId: '1',
+          clientName: 'Acme Corporation',
+          clientEmail: 'billing@acme.com',
+          amount: 4999.99,
+          currency: 'USD',
+          stripeFee: 149.99,
+          netAmount: 4850.00,
+          description: 'Enterprise Software License - Annual',
+          reference: 'INV-2024-001',
+          invoiceNumber: 'ACME-001-2024',
+          stripeTransactionId: 'txn_1234567890',
+          stripeChargeId: 'ch_1234567890',
+          stripePaymentIntentId: 'pi_1234567890',
+          stripePaymentMethodId: 'pm_1234567890',
+          status: 'completed',
+          processingStatus: 'settled',
+          paymentMethod: {
+            type: 'card',
+            brand: 'visa',
+            last4: '4242',
+            expiryMonth: 12,
+            expiryYear: 2025,
+            country: 'US',
+            fingerprint: 'fp_1234567890'
+          },
+          riskScore: 15,
+          fraudFlags: [],
+          transactionDate: '2024-01-20T15:30:00Z',
+          processedAt: '2024-01-20T15:30:05Z',
+          settledAt: '2024-01-21T09:00:00Z',
+          tags: ['enterprise', 'annual', 'software'],
+          metadata: {
+            contract_id: 'ACME-2024-001',
+            sales_rep: 'john.doe',
+            department: 'IT'
+          },
+          createdAt: '2024-01-20T15:30:00Z',
+          updatedAt: '2024-01-21T09:00:00Z'
+        },
+        {
+          id: '2',
+          clientId: '2',
+          clientName: 'TechStart Solutions',
+          clientEmail: 'payments@techstart.io',
+          amount: 1299.00,
+          currency: 'USD',
+          stripeFee: 38.97,
+          netAmount: 1260.03,
+          description: 'Monthly SaaS Subscription',
+          reference: 'SUB-2024-002',
+          stripeTransactionId: 'txn_2345678901',
+          stripeChargeId: 'ch_2345678901',
+          stripePaymentIntentId: 'pi_2345678901',
+          status: 'completed',
+          processingStatus: 'settled',
+          paymentMethod: {
+            type: 'card',
+            brand: 'mastercard',
+            last4: '5555',
+            expiryMonth: 8,
+            expiryYear: 2026,
+            country: 'US',
+            fingerprint: 'fp_2345678901'
+          },
+          riskScore: 8,
+          fraudFlags: [],
+          transactionDate: '2024-01-19T11:45:00Z',
+          processedAt: '2024-01-19T11:45:03Z',
+          settledAt: '2024-01-20T09:00:00Z',
+          tags: ['subscription', 'monthly', 'saas'],
+          metadata: {
+            subscription_id: 'sub_techstart_001',
+            plan: 'professional'
+          },
+          createdAt: '2024-01-19T11:45:00Z',
+          updatedAt: '2024-01-20T09:00:00Z'
+        },
+        {
+          id: '3',
+          clientId: '1',
+          clientName: 'Acme Corporation',
+          clientEmail: 'billing@acme.com',
+          amount: 2500.00,
+          currency: 'USD',
+          stripeFee: 75.00,
+          netAmount: 2425.00,
+          description: 'Professional Services - Consulting',
+          reference: 'PS-2024-003',
+          stripeTransactionId: 'txn_3456789012',
+          stripeChargeId: 'ch_3456789012',
+          stripePaymentIntentId: 'pi_3456789012',
+          status: 'pending',
+          processingStatus: 'authorized',
+          paymentMethod: {
+            type: 'bank_transfer',
+            country: 'US'
+          },
+          riskScore: 5,
+          fraudFlags: [],
+          transactionDate: '2024-01-18T13:20:00Z',
+          processedAt: '2024-01-18T13:20:02Z',
+          tags: ['consulting', 'professional-services'],
+          metadata: {
+            project_id: 'PROJ-2024-001',
+            consultant: 'jane.smith'
+          },
+          createdAt: '2024-01-18T13:20:00Z',
+          updatedAt: '2024-01-18T13:20:02Z'
+        },
+        {
+          id: '4',
+          description: 'Product License - Standard',
+          reference: 'LIC-2024-004',
+          stripeTransactionId: 'txn_4567890123',
+        }
+      ]
       const response = await this.get<ListResponse<Transaction>>(`/transactions${this.buildQueryString(params)}`);
       return response;
 

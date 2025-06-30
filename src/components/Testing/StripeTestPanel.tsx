@@ -72,11 +72,15 @@ const StripeTestPanel: React.FC<StripeTestPanelProps> = ({ isVisible }) => {
   const handleTestEdgeFunctions = async () => {
     setIsLoading(true);
     try {
-      // Implementation removed for production
+      const result = await testEdgeFunctions();
+      setEdgeFunctionStatus(result);
+      
       showNotification(
-        'warning',
-        'Edge Function Testing Disabled',
-        'Edge Function testing has been disabled in production.'
+        result.allAvailable ? 'success' : 'warning',
+        'Edge Function Test Complete',
+        result.allAvailable 
+          ? 'All Edge Functions are available' 
+          : 'Some Edge Functions are not available'
       );
     } catch (error) {
       console.error('Error testing Edge Functions:', error);
@@ -93,12 +97,49 @@ const StripeTestPanel: React.FC<StripeTestPanelProps> = ({ isVisible }) => {
   const handleDebugConnection = async () => {
     setIsLoading(true);
     try {
-      // Implementation removed for production
-      // Implementation removed for production
+      const result = await debugStripeConnection();
+      console.log('Stripe connection debug results:', result);
+      
       showNotification(
-        'warning',
-        'Webhook Simulation Disabled',
-        'Webhook simulation has been disabled in production.'
+        result.status === 'error' ? 'error' : 
+        result.status === 'warning' ? 'warning' : 'success',
+        'Stripe Connection Diagnosis',
+        result.message
+      );
+    } catch (error) {
+      console.error('Error debugging Stripe connection:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSimulateWebhook = async (eventType: 'customer.created' | 'payment_intent.succeeded' | 'charge.refunded') => {
+    setIsLoading(true);
+    try {
+      let data;
+      
+      // Generate appropriate test data based on event type
+      switch (eventType) {
+        case 'customer.created':
+          data = generateTestCustomer('Test Customer', 'test@example.com');
+          break;
+        case 'payment_intent.succeeded':
+          data = generateTestPaymentIntent(1999, 'usd');
+          break;
+        case 'charge.refunded':
+          data = generateTestCharge(1999, 'usd');
+          data.refunds = {
+            data: [generateTestRefund(1999, 'usd', data.id)]
+          };
+          break;
+      }
+      
+      const result = await simulateWebhookEvent(eventType, data);
+      
+      showNotification(
+        result.success ? 'success' : 'error',
+        'Webhook Simulation',
+        result.message
       );
     } catch (error) {
       console.error('Error simulating webhook:', error);

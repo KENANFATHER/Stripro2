@@ -188,7 +188,7 @@ function validateSitemapContent(xmlContent) {
 
   return results;
 }
-    results.errors.push(`File too large (${Math.round(results.stats.fileSize / 1024 / 1024)}MB). Maximum is ${Math.round(MAX_FILE_SIZE / 1024 / 1024)}MB`);
+
 /**
  * Main validation function
  */

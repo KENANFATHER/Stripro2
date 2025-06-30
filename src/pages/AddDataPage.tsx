@@ -61,22 +61,14 @@ const AddDataPage: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      // Real API call implementation
-      const transactionData = {
-        clientName: formData.clientName,
-        clientEmail: formData.clientEmail,
-        amount: parseFloat(formData.amount),
-        description: formData.description,
-        date: formData.date
-      };
-      
-      // Call API to add transaction
-      await apiClient.post('/transactions', transactionData);
-      
+      // Simulate API call for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Show success notification
       showNotification(
         'success',
-        'Transaction Added',
-        `Successfully added transaction for ${formData.clientName}`
+        'Demo Transaction Added',
+        `Successfully added demo transaction for ${formData.clientName}`
       );
       
       // Reset form
