@@ -404,6 +404,89 @@ export class StripeService {
       };
     }
   }
+
+  /**
+   * Disconnect Stripe account using OAuth deauthorization
+   * 
+   * This properly deauthorizes the connected account through Stripe's OAuth
+   * deauthorization endpoint, which is the recommended way to disconnect
+   * rather than just removing local data.
+   * 
+   * @param stripeAccountId - The connected Stripe account ID to disconnect
+   * @returns Promise with disconnection result
+   */
+  async disconnectStripeAccount(stripeAccountId: string): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    try {
+      if (!this.connectClientId) {
+        throw new Error('Stripe Connect client ID not configured');
+      }
+
+      console.log('Initiating Stripe account disconnection for account:', stripeAccountId);
+
+      // Call Stripe's OAuth deauthorization endpoint
+      // This properly removes the authorization between our platform and the connected account
+      const deauthorizeResponse = await fetch('https://connect.stripe.com/oauth/deauthorize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          client_id: this.connectClientId,
+          stripe_user_id: stripeAccountId,
+        }),
+      });
+
+      if (!deauthorizeResponse.ok) {
+        const errorData = await deauthorizeResponse.text();
+        console.error('Stripe deauthorization failed:', errorData);
+        
+        // If the account is already disconnected or doesn't exist, consider it a success
+        if (deauthorizeResponse.status === 404 || errorData.includes('already_disconnected')) {
+          console.log('Account was already disconnected or not found');
+          return {
+            success: true,
+            message: 'Stripe account was already disconnected or not found'
+          };
+        }
+        
+        throw new Error(`Failed to deauthorize Stripe account: ${errorData}`);
+      }
+
+      const deauthorizeData = await deauthorizeResponse.json();
+      console.log('Stripe deauthorization successful:', deauthorizeData);
+
+      return {
+        success: true,
+        message: 'Stripe account successfully disconnected'
+      };
+
+    } catch (error) {
+      console.error('Failed to disconnect Stripe account:', error);
+      return {
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to disconnect Stripe account'
+      };
+    }
+  }
+
+  /**
+   * Clear all local Stripe integration data
+   * 
+   * This removes all locally stored Stripe-related information
+   * after a successful disconnection.
+   */
+  clearStripeIntegrationData(): void {
+    // Clear API keys and configuration
+    this.clearApiKeys();
+    
+    // Clear any cached Stripe instance
+    this.stripe = null;
+    
+    console.log('Local Stripe integration data cleared');
+  }
 }
 
 // Export singleton instance

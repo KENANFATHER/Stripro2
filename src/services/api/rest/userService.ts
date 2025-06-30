@@ -213,6 +213,32 @@ class UserService extends BaseApiService {
       throw error;
     }
   }
+
+  /**
+   * Request full data deletion (GDPR compliance)
+   * 
+   * @param reason - Reason for data deletion request
+   * @returns Promise with deletion request confirmation
+   */
+  async requestDataDeletion(reason?: string): Promise<{
+    requestId: string;
+    message: string;
+    estimatedCompletionDate: string;
+  }> {
+    try {
+      const result = await this.post<{
+        requestId: string;
+        message: string;
+        estimatedCompletionDate: string;
+      }>('/users/me/data-deletion', { reason });
+      
+      return result;
+
+    } catch (error) {
+      console.error('Error requesting data deletion:', error);
+      throw error;
+    }
+  }
 }
 
 // Export singleton instance
