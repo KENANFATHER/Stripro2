@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
+// Environment variable names for better error messages
+const REQUIRED_ENV_VARS = {
+  STRIPE_SECRET_KEY: 'STRIPE_SECRET_KEY',
+}
+
 // Configure function to be publicly accessible (no JWT verification)
 export const config = { auth: false }
 
@@ -55,6 +60,11 @@ serve(async (req) => {
   }
 
   try {
+    // Check for required environment variables
+    if (!Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)) {
+      throw new Error(`Missing required environment variable: ${REQUIRED_ENV_VARS.STRIPE_SECRET_KEY}. Please set this in your Supabase project.`)
+    }
+
     console.log('Stripe profitability calculation started...')
     
     // Check for Stripe account ID in headers (for Stripe Connect)
@@ -64,10 +74,7 @@ serve(async (req) => {
     }
 
     // Get Stripe secret key from environment
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    if (!stripeSecretKey) {
-      throw new Error('Stripe secret key not configured in Edge Function environment')
-    }
+    const stripeSecretKey = Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)!
 
     console.log('Fetching customers from Stripe...')
 

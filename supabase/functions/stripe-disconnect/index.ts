@@ -1,6 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 
+// Environment variable names for better error messages
+const REQUIRED_ENV_VARS = {
+  STRIPE_SECRET_KEY: 'STRIPE_SECRET_KEY',
+  SUPABASE_URL: 'SUPABASE_URL',
+  SUPABASE_SERVICE_ROLE_KEY: 'SUPABASE_SERVICE_ROLE_KEY',
+  STRIPE_CONNECT_CLIENT_ID: 'STRIPE_CONNECT_CLIENT_ID',
+}
+
 // Configure function to be publicly accessible (no JWT verification)
 export const config = { auth: false }
 
@@ -27,18 +35,29 @@ serve(async (req) => {
   try {
     console.log('Stripe disconnect request received')
 
+    // Check for required environment variables
+    const missingEnvVars = []
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.SUPABASE_URL)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_SERVICE_ROLE_KEY)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.SUPABASE_SERVICE_ROLE_KEY)
+    }
+    
+    if (missingEnvVars.length > 0) {
+      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}. Please set these in your Supabase project.`)
+    }
+
     // Get environment variables
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-
-    if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY not configured in Edge Function environment')
-    }
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Supabase configuration missing in Edge Function environment')
-    }
+    const stripeSecretKey = Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)!
+    const supabaseUrl = Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)!
+    const supabaseServiceKey = Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_SERVICE_ROLE_KEY)!
 
     // Parse request body
     const { userId, stripeAccountId, reason } = await req.json()
@@ -52,14 +71,14 @@ serve(async (req) => {
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-    // 1. Deauthorize the Stripe account (if Connect client ID is available)
+    // 1. Deauthorize the Stripe account (if Connect client ID is available) 
     let deauthorizationSuccess = false
     let deauthorizationMessage = 'Stripe deauthorization skipped (no Connect client ID)'
 
     const connectClientId = Deno.env.get('STRIPE_CONNECT_CLIENT_ID')
     if (connectClientId) {
       try {
-        console.log('Attempting Stripe OAuth deauthorization...')
+        console.log('Attempting Stripe OAuth deauthorization with client ID:', connectClientId)
         
         const deauthorizeResponse = await fetch('https://connect.stripe.com/oauth/deauthorize', {
           method: 'POST',

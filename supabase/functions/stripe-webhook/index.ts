@@ -2,6 +2,14 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 import Stripe from 'https://esm.sh/stripe@14.21.0?target=deno'
 
+// Environment variable names for better error messages
+const REQUIRED_ENV_VARS = {
+  STRIPE_SECRET_KEY: 'STRIPE_SECRET_KEY',
+  STRIPE_WEBHOOK_SECRET: 'STRIPE_WEBHOOK_SECRET',
+  SUPABASE_URL: 'SUPABASE_URL',
+  SUPABASE_SERVICE_ROLE_KEY: 'SUPABASE_SERVICE_ROLE_KEY',
+}
+
 // Configure function to be publicly accessible (no JWT verification)
 export const config = { auth: false }
 
@@ -28,23 +36,34 @@ serve(async (req) => {
   try {
     console.log('Stripe webhook received')
 
+    // Check for required environment variables
+    const missingEnvVars = []
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.STRIPE_WEBHOOK_SECRET)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.STRIPE_WEBHOOK_SECRET)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.SUPABASE_URL)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_SERVICE_ROLE_KEY)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.SUPABASE_SERVICE_ROLE_KEY)
+    }
+    
+    if (missingEnvVars.length > 0) {
+      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}. Please set these in your Supabase project.`)
+    }
+
     // Get environment variables
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    const stripeWebhookSecret = Deno.env.get('STRIPE_WEBHOOK_SECRET')
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-
-    if (!stripeSecretKey) {
-      throw new Error('STRIPE_SECRET_KEY not configured in Edge Function environment')
-    }
-
-    if (!stripeWebhookSecret) {
-      throw new Error('STRIPE_WEBHOOK_SECRET not configured in Edge Function environment')
-    }
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Supabase configuration missing in Edge Function environment')
-    }
+    const stripeSecretKey = Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)!
+    const stripeWebhookSecret = Deno.env.get(REQUIRED_ENV_VARS.STRIPE_WEBHOOK_SECRET)!
+    const supabaseUrl = Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)!
+    const supabaseServiceKey = Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_SERVICE_ROLE_KEY)!
 
     // Initialize Stripe
     const stripe = new Stripe(stripeSecretKey, {

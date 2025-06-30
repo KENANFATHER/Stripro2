@@ -1,6 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.0'
 
+// Environment variable names for better error messages
+const REQUIRED_ENV_VARS = {
+  STRIPE_SECRET_KEY: 'STRIPE_SECRET_KEY',
+  SUPABASE_URL: 'SUPABASE_URL',
+  SERVICE_ROLE_KEY: 'SERVICE_ROLE_KEY',
+  FRONTEND_URL: 'FRONTEND_URL',
+}
+
 // Configure function to be publicly accessible (no JWT verification)
 export const config = { auth: false }
 
@@ -16,6 +24,25 @@ serve(async (req) => {
   }
 
   try {
+    // Check for required environment variables
+    const missingEnvVars = []
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.SUPABASE_URL)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.SERVICE_ROLE_KEY)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.SERVICE_ROLE_KEY)
+    }
+    
+    if (!Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)) {
+      missingEnvVars.push(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)
+    }
+    
+    if (missingEnvVars.length > 0) {
+      throw new Error(`Missing required environment variables: ${missingEnvVars.join(', ')}. Please set these in your Supabase project.`)
+    }
+
     const url = new URL(req.url)
     const code = url.searchParams.get('code')
     const state = url.searchParams.get('state')
@@ -42,10 +69,7 @@ serve(async (req) => {
     }
 
     // Get Stripe secret key from environment
-    const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
-    if (!stripeSecretKey) {
-      throw new Error('Stripe secret key not configured in Edge Function environment')
-    }
+    const stripeSecretKey = Deno.env.get(REQUIRED_ENV_VARS.STRIPE_SECRET_KEY)!
 
     // Exchange authorization code for access token
     console.log('Exchanging authorization code for access token...')
@@ -92,15 +116,15 @@ serve(async (req) => {
     console.log('Account details fetched:', {
       id: accountData.id,
       email: accountData.email,
-      country: accountData.country,
-      charges_enabled: accountData.charges_enabled,
-      payouts_enabled: accountData.payouts_enabled
+      country: accountData.country || 'unknown',
+      charges_enabled: accountData.charges_enabled || false,
+      payouts_enabled: accountData.payouts_enabled || false
     })
 
     // Initialize Supabase client with service role key for admin operations
     const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') || '',
-      Deno.env.get('SERVICE_ROLE_KEY') || '' // Changed from SUPABASE_ADMIN_KEY
+      Deno.env.get(REQUIRED_ENV_VARS.SUPABASE_URL)!,
+      Deno.env.get(REQUIRED_ENV_VARS.SERVICE_ROLE_KEY)!
     )
 
     // Extract user_id from the state parameter
@@ -133,7 +157,8 @@ serve(async (req) => {
     console.log('User metadata updated in Supabase:', updateData)
 
     // Redirect back to the app with success
-    const redirectUrl = new URL(`${Deno.env.get('FRONTEND_URL') || 'http://localhost:5173'}/settings`)
+    const frontendUrl = Deno.env.get(REQUIRED_ENV_VARS.FRONTEND_URL) || 'http://localhost:5173'
+    const redirectUrl = new URL(`${frontendUrl}/settings`)
     redirectUrl.searchParams.set('stripe_connected', 'true')
     redirectUrl.searchParams.set('stripe_account_id', accountData.id)
     
@@ -143,7 +168,8 @@ serve(async (req) => {
     console.error('Stripe Connect callback error:', error)
     
     // Redirect back to app with error
-    const redirectUrl = new URL(`${Deno.env.get('FRONTEND_URL') || 'http://localhost:5173'}/settings`)
+    const frontendUrl = Deno.env.get(REQUIRED_ENV_VARS.FRONTEND_URL) || 'http://localhost:5173'
+    const redirectUrl = new URL(`${frontendUrl}/settings`)
     redirectUrl.searchParams.set('stripe_error', 'callback_failed')
     redirectUrl.searchParams.set('stripe_error_description', error.message)
     
