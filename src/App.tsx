@@ -36,8 +36,7 @@ import {
   DashboardPage, 
   ClientsPage, 
   AddDataPage, 
-  SettingsPage,
-  TestingPage
+  SettingsPage
 } from './pages';
 
 const AppContent: React.FC = () => {

@@ -26,7 +26,7 @@
 
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { BarChart3, Plus, Settings, LogOut, CreditCard, Users, Menu, X, TestTube } from 'lucide-react';
+import { BarChart3, Plus, Settings, LogOut, CreditCard, Users, Menu, X } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 
 interface NavigationItem {
@@ -58,9 +58,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'dashboard', label: 'Dashboard', icon: BarChart3, path: '/dashboard' },
     { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
     { id: 'add-data', label: 'Add Data', icon: Plus, path: '/add-data' },
-    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
-    // Add testing page for development/QA
-    ...(import.meta.env.DEV ? [{ id: 'testing', label: 'QA Testing', icon: TestTube, path: '/testing' }] : []),
+    { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' }
   ];
 
   const handleLogout = () => {
