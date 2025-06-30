@@ -1013,9 +1013,7 @@ const SettingsPage: React.FC = () => {
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <p className="text-sm text-blue-800">
                 <strong>Need help?</strong> Contact our Data Protection Officer at{' '}
-                <a href="mailto:dpo@stripro.com" className="underline hover:no-underline">
-                  dpo@stripro.com
-                </a>{' '}
+                our support team{' '}
                 if you have questions about this process.
               </p>
             </div>
