@@ -133,6 +133,7 @@ const Dashboard: React.FC = () => {
             />
           </div>
         ) : (
+        <>
         <StatsCard
           title="Total Revenue"
           value={formatCurrency(displayStats.totalRevenue)}
@@ -165,6 +166,7 @@ const Dashboard: React.FC = () => {
           icon={Users}
           iconColor="bg-gradient-to-br from-lilac-500 to-lilac-600"
         />
+        </>
         )}
       </div>
 
