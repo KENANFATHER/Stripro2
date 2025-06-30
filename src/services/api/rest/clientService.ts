@@ -234,6 +234,8 @@ class ClientService extends BaseApiService {
       // Add authorization header if available
       if (import.meta.env.VITE_SUPABASE_ANON_KEY) {
         headers['Authorization'] = `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`;
+      } else {
+        console.warn('[ClientService] No SUPABASE_ANON_KEY found in environment variables');
       }
       
       // Add Stripe account header if provided
@@ -244,6 +246,7 @@ class ClientService extends BaseApiService {
       const response = await fetch(edgeFunctionUrl, {
         method: 'GET',
         headers,
+        credentials: 'omit' // Don't send cookies to avoid CORS issues
       });
 
       if (!response.ok) {
@@ -252,9 +255,18 @@ class ClientService extends BaseApiService {
         try {
           errorData = JSON.parse(errorText);
         } catch {
-          errorData = { error: errorText || `HTTP ${response.status}: ${response.statusText}` };
+          errorData = { 
+            error: errorText || `HTTP ${response.status}: ${response.statusText}`,
+            status: response.status
+          };
         }
-        throw new Error(errorData.error || 'Failed to fetch profitability data from Edge Function');
+        
+        // Special handling for 401 errors
+        if (response.status === 401) {
+          throw new Error(`Authentication error (401): The Edge Function requires authentication or has JWT verification enabled. Check your Supabase configuration.`);
+        } else {
+          throw new Error(errorData.error || `Failed to fetch profitability data from Edge Function (HTTP ${response.status})`);
+        }
       }
 
       const data = await response.json();

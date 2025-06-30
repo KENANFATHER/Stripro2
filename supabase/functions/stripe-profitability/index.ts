@@ -1,5 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
+// Configure function to be publicly accessible (no JWT verification)
+export const config = { auth: false }
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -63,7 +66,7 @@ serve(async (req) => {
     // Get Stripe secret key from environment
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY')
     if (!stripeSecretKey) {
-      throw new Error('Stripe secret key not configured. Please add STRIPE_SECRET_KEY to your Edge Function environment variables.')
+      throw new Error('Stripe secret key not configured in Edge Function environment')
     }
 
     console.log('Fetching customers from Stripe...')
@@ -277,7 +280,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(clientProfitability),
       {
-        headers: { 
+        headers: {
           ...corsHeaders, 
           'Content-Type': 'application/json' 
         },
@@ -290,7 +293,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        details: 'Check the Edge Function logs for more information'
+        details: 'Check the Edge Function logs for more information',
+        timestamp: new Date().toISOString()
       }),
       {
         status: 500,
