@@ -36,6 +36,10 @@ const SettingsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingStripe, setIsTestingStripe] = useState(false);
+  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
+  const [isDisconnecting, setIsDisconnecting] = useState(false);
+  const [showDataDeletionDialog, setShowDataDeletionDialog] = useState(false);
+  const [dataDeletionReason, setDataDeletionReason] = useState('');
 
   // Profile data state
   const [profileData, setProfileData] = useState({
