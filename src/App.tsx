@@ -30,14 +30,15 @@ import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { Sidebar, NotificationContainer, BoltBadge } from './components';
-import { 
+import {
   LandingPage,
   AuthCallbackPage,
   DashboardPage, 
   ClientsPage, 
   AddDataPage, 
-  SettingsPage
+  SettingsPage,
 } from './pages';
+import StripeTestPage from './pages/StripeTestPage';
 
 const AppContent: React.FC = () => {
   const { user } = useAuth();
@@ -90,6 +91,9 @@ const AppContent: React.FC = () => {
                   <Route path="/clients" element={<ClientsPage />} />
                   <Route path="/add-data" element={<AddDataPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
+                  {process.env.NODE_ENV !== 'production' && (
+                    <Route path="/stripe-test" element={<StripeTestPage />} />
+                  )}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Routes>
               </div>
