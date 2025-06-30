@@ -226,6 +226,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onD
             <div className="mt-3">
               <button
                 onClick={action.onClick}
+                data-testid="notification-action"
                 className={`text-sm font-medium ${colors.title} hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-current rounded transition-all duration-150`}
               >
                 {action.label}
@@ -238,6 +239,7 @@ const NotificationToast: React.FC<NotificationToastProps> = ({ notification, onD
         <div className="flex-shrink-0 ml-3">
           <button
             onClick={() => onDismiss(id)}
+            data-testid="notification-close"
             className={`inline-flex p-1.5 rounded-md ${colors.closeButton} hover:bg-black/5 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-current transition-all duration-150`}
             aria-label="Dismiss notification"
           >

@@ -377,12 +377,16 @@ export class StripeService {
 
       // If a key was provided, temporarily set it for testing
       if (publishableKey && publishableKey !== this.publishableKey) {
-        await this.setApiKeys(publishableKey);
-      }
-
-      const stripe = await this.getStripe();
-      if (!stripe) {
-        return { valid: false, error: 'Failed to initialize Stripe' };
+        // Temporarily initialize Stripe with the test key
+        const testStripe = await loadStripe(publishableKey);
+        if (!testStripe) {
+          return { valid: false, error: 'Failed to initialize Stripe with provided key' };
+        }
+      } else {
+        const stripe = await this.getStripe();
+        if (!stripe) {
+          return { valid: false, error: 'Failed to initialize Stripe' };
+        }
       }
 
       // For testing publishable keys, we can check if it's a valid format
@@ -401,6 +405,56 @@ export class StripeService {
       return { 
         valid: false, 
         error: error instanceof Error ? error.message : 'Unknown error' 
+      };
+    }
+  }
+
+  /**
+   * Get real-time Stripe account status
+   * 
+   * @param accountId - Stripe account ID to check
+   * @returns Promise with account status information
+   */
+  async getAccountStatus(accountId: string): Promise<{
+    isActive: boolean;
+    chargesEnabled: boolean;
+    payoutsEnabled: boolean;
+    email?: string;
+    country?: string;
+    error?: string;
+  }> {
+    try {
+      // This would typically call your backend API to check account status
+      // For now, we'll return a mock response
+      
+      // TODO: Replace with actual backend API call
+      // const response = await fetch('/api/stripe/account-status', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify({ accountId })
+      // });
+      // const statusData = await response.json();
+      // return statusData;
+
+      console.log('Mock account status check for:', accountId);
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      return {
+        isActive: true,
+        chargesEnabled: true,
+        payoutsEnabled: true,
+        email: 'user@example.com',
+        country: 'US'
+      };
+
+    } catch (error) {
+      return {
+        isActive: false,
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        error: error instanceof Error ? error.message : 'Failed to check account status'
       };
     }
   }

@@ -59,6 +59,8 @@ const Sidebar: React.FC<SidebarProps> = ({
     { id: 'clients', label: 'Clients', icon: Users, path: '/clients' },
     { id: 'add-data', label: 'Add Data', icon: Plus, path: '/add-data' },
     { id: 'settings', label: 'Settings', icon: Settings, path: '/settings' },
+    // Add testing page for development/QA
+    ...(import.meta.env.DEV ? [{ id: 'testing', label: 'QA Testing', icon: TestTube, path: '/testing' }] : []),
   ];
 
   const handleLogout = () => {

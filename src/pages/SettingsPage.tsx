@@ -42,6 +42,17 @@ const SettingsPage: React.FC = () => {
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [dataDeletionReason, setDataDeletionReason] = useState('');
+  const [stripeConnectionStatus, setStripeConnectionStatus] = useState<{
+    isConnected: boolean;
+    accountId?: string;
+    email?: string;
+    status?: string;
+    lastChecked?: Date;
+  }>({
+    isConnected: false,
+    lastChecked: new Date()
+  });
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
 
   // Profile data state
   const [profileData, setProfileData] = useState({
@@ -82,7 +93,48 @@ const SettingsPage: React.FC = () => {
       publishableKey: keys.publishableKey || '',
       connectClientId: keys.connectClientId || ''
     }));
+    
+    // Check Stripe connection status on mount
+    checkStripeConnectionStatus();
   }, []);
+
+  /**
+   * Check real-time Stripe connection status
+   */
+  const checkStripeConnectionStatus = async () => {
+    setIsCheckingStatus(true);
+    
+    try {
+      // Check if user has Stripe connected in their metadata
+      const userStripeConnected = user?.stripeConnected || false;
+      const userStripeAccountId = user?.stripeAccountId;
+      
+      if (userStripeConnected && userStripeAccountId) {
+        // TODO: In production, verify the connection is still valid by calling Stripe API
+        // For now, we'll trust the user metadata
+        setStripeConnectionStatus({
+          isConnected: true,
+          accountId: userStripeAccountId,
+          email: user?.email,
+          status: 'active',
+          lastChecked: new Date()
+        });
+      } else {
+        setStripeConnectionStatus({
+          isConnected: false,
+          lastChecked: new Date()
+        });
+      }
+    } catch (error) {
+      console.error('Failed to check Stripe connection status:', error);
+      setStripeConnectionStatus({
+        isConnected: false,
+        lastChecked: new Date()
+      });
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  };
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -247,13 +299,30 @@ const SettingsPage: React.FC = () => {
     setIsDisconnecting(true);
     
     try {
-      // TODO: Implement actual Stripe disconnect logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!stripeConnectionStatus.accountId) {
+        throw new Error('No Stripe account found to disconnect');
+      }
+
+      // Call the Stripe disconnect service
+      const disconnectResult = await stripeService.disconnectStripeAccount(stripeConnectionStatus.accountId);
+      
+      if (!disconnectResult.success) {
+        throw new Error(disconnectResult.message);
+      }
+
+      // Clear local Stripe data
+      stripeService.clearStripeIntegrationData();
+      
+      // Update connection status
+      setStripeConnectionStatus({
+        isConnected: false,
+        lastChecked: new Date()
+      });
       
       showNotification(
         'success',
         'Stripe Disconnected',
-        'Your Stripe account has been disconnected successfully.'
+        disconnectResult.message
       );
       
       setShowDisconnectDialog(false);
@@ -273,13 +342,21 @@ const SettingsPage: React.FC = () => {
     setIsSaving(true);
     
     try {
-      // TODO: Implement actual data deletion request logic
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      if (!user?.id) {
+        throw new Error('User not authenticated');
+      }
+
+      // Call the GDPR deletion service
+      const { supabaseAuthService } = await import('../services/supabaseAuthService');
+      const deletionResult = await supabaseAuthService.requestGDPRDataDeletion(
+        user.id,
+        dataDeletionReason || 'User requested data deletion'
+      );
       
       showNotification(
         'success',
         'Data Deletion Requested',
-        'Your data deletion request has been submitted. You will receive confirmation via email.'
+        deletionResult.message
       );
       
       setShowDataDeletionDialog(false);
@@ -294,6 +371,30 @@ const SettingsPage: React.FC = () => {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  /**
+   * Handle API key management button click
+   */
+  const handleManageApiKeys = () => {
+    // Navigate to API keys section
+    setActiveSection('stripe');
+    
+    // Scroll to the API keys section
+    setTimeout(() => {
+      const apiKeysSection = document.getElementById('stripe-api-keys-section');
+      if (apiKeysSection) {
+        apiKeysSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
+  };
+
+  /**
+   * Refresh Stripe connection status
+   */
+  const handleRefreshStatus = async () => {
+    await checkStripeConnectionStatus();
+    showNotification('info', 'Status Updated', 'Stripe connection status has been refreshed');
   };
 
   const sections = [
@@ -423,26 +524,61 @@ const SettingsPage: React.FC = () => {
                       <div>
                         <p className="font-medium text-sage-900">Stripe Account Status</p>
                         <p className="text-sm text-sage-600">
-                          {stripeConfig.isConfigured ? 'Configured and ready' : 'Not configured'}
+                          {isCheckingStatus ? 'Checking status...' : 
+                           stripeConnectionStatus.isConnected ? 'Connected and active' : 'Not connected'}
                         </p>
+                        {stripeConnectionStatus.lastChecked && (
+                          <p className="text-xs text-sage-500">
+                            Last checked: {stripeConnectionStatus.lastChecked.toLocaleTimeString()}
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">
                       <div className={`w-3 h-3 rounded-full ${
-                        stripeConfig.isConfigured ? 'bg-green-400' : 'bg-sage-300'
+                        stripeConnectionStatus.isConnected ? 'bg-green-400' : 'bg-sage-300'
                       }`} />
-                      {stripeConfig.isConfigured && (
+                      <div className="flex space-x-2">
                         <button
-                          onClick={connectStripe}
-                          className="px-4 py-2 bg-coral-600 text-white rounded-lg hover:bg-coral-700 transition-colors font-medium"
+                          onClick={handleRefreshStatus}
+                          disabled={isCheckingStatus}
+                          data-testid="refresh-status"
+                          className="px-3 py-1 text-sm border border-sage-300 text-sage-700 rounded-lg hover:bg-sage-50 disabled:opacity-50 transition-colors"
+                          title="Refresh connection status"
                         >
-                          Connect Account
+                          {isCheckingStatus ? 'Checking...' : 'Refresh'}
                         </button>
+                        {stripeConnectionStatus.isConnected ? (
+                          <button
+                            onClick={() => setShowDisconnectDialog(true)}
+                            data-testid="disconnect-stripe"
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                          >
+                            Disconnect
+                          </button>
+                        ) : stripeConfig.isConfigured ? (
+                          <button
+                            onClick={connectStripe}
+                            data-testid="connect-stripe"
+                            className="px-4 py-2 bg-coral-600 text-white rounded-lg hover:bg-coral-700 transition-colors font-medium"
+                          >
+                            Connect Account
+                          </button>
+                        ) : (
+                          <button
+                            onClick={handleManageApiKeys}
+                            data-testid="manage-api-keys"
+                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                          >
+                            Setup API Keys
+                          </button>
+                        )}
+                      </div>
                       )}
                     </div>
                   </div>
                   
-                  {stripeConfig.isConfigured && (
+                  {(stripeConfig.isConfigured || stripeConnectionStatus.isConnected) && (
                     <div className="mt-4 pt-4 border-t border-sage-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                         <div>
@@ -455,6 +591,14 @@ const SettingsPage: React.FC = () => {
                             {stripeConfig.keyType === 'test' ? 'Test Mode' : 'Live Mode'}
                           </span>
                         </div>
+                        {stripeConnectionStatus.isConnected && stripeConnectionStatus.accountId && (
+                          <div>
+                            <span className="text-sage-600">Account ID:</span>
+                            <span className="ml-2 font-mono text-xs">
+                              {stripeConnectionStatus.accountId.substring(0, 12)}...
+                            </span>
+                          </div>
+                        )}
                         <div>
                           <span className="text-sage-600">Publishable Key:</span>
                           <span className="ml-2 font-mono text-xs">{stripeConfig.publishableKeyMasked}</span>
@@ -471,7 +615,14 @@ const SettingsPage: React.FC = () => {
                 </div>
 
                 {/* API Keys Configuration */}
-                <div className="space-y-6">
+                <div id="stripe-api-keys-section" className="space-y-6">
+                  <div className="border-b border-sage-200 pb-4">
+                    <h4 className="text-lg font-semibold text-sage-900">API Keys Configuration</h4>
+                    <p className="text-sm text-sage-600 mt-1">
+                      Configure your Stripe API keys to enable payment processing and analytics
+                    </p>
+                  </div>
+                  
                   <div>
                     <label htmlFor="publishableKey" className="block text-sm font-medium text-sage-700 mb-2">
                       Stripe Publishable Key *
@@ -529,6 +680,7 @@ const SettingsPage: React.FC = () => {
                     <button
                       onClick={handleTestStripeKey}
                       disabled={isTestingStripe || !stripeKeys.publishableKey.trim()}
+                      data-testid="test-stripe-key"
                       className="flex items-center justify-center space-x-2 px-4 py-2 border border-sage-300 text-sage-700 rounded-xl hover:bg-sage-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {isTestingStripe ? (
@@ -547,6 +699,7 @@ const SettingsPage: React.FC = () => {
                     <button
                       onClick={handleSaveStripeKeys}
                       disabled={isSaving || !stripeKeys.publishableKey.trim()}
+                      data-testid="save-stripe-keys"
                       className="flex items-center justify-center space-x-2 px-4 py-2 bg-coral-600 text-white rounded-xl hover:bg-coral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       {isSaving ? (
@@ -687,6 +840,7 @@ const SettingsPage: React.FC = () => {
                       <button
                         onClick={handlePasswordChange}
                         disabled={isSaving || !passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword}
+                        data-testid="change-password"
                         className="px-4 py-2 bg-coral-600 text-white rounded-xl hover:bg-coral-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {isSaving ? 'Updating...' : 'Update Password'}
@@ -717,6 +871,8 @@ const SettingsPage: React.FC = () => {
                       This action cannot be undone.
                     </p>
                     <button 
+                      onClick={handleManageApiKeys}
+                      data-testid="manage-api-keys-security"
                       onClick={() => setShowDataDeletionDialog(true)}
                       className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
                     >
@@ -733,6 +889,7 @@ const SettingsPage: React.FC = () => {
                 <button
                   onClick={handleSave}
                   disabled={isSaving}
+                  data-testid="save-profile"
                   className="flex items-center space-x-2 px-6 py-3 bg-gradient-coral text-white rounded-xl hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium"
                 >
                   {isSaving ? (
@@ -774,8 +931,22 @@ const SettingsPage: React.FC = () => {
                 <li>• All stored Stripe data will be removed from your account</li>
                 <li>• You'll need to reconnect to access Stripe features again</li>
                 <li>• Your Stripe account itself will remain unchanged</li>
+                <li>• This action cannot be undone</li>
               </ul>
             </div>
+            
+            {stripeConnectionStatus.accountId && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <h4 className="font-medium text-blue-800 mb-2">Account Details:</h4>
+                <div className="text-sm text-blue-700 space-y-1">
+                  <p><strong>Account ID:</strong> {stripeConnectionStatus.accountId}</p>
+                  {stripeConnectionStatus.email && (
+                    <p><strong>Email:</strong> {stripeConnectionStatus.email}</p>
+                  )}
+                  <p><strong>Status:</strong> {stripeConnectionStatus.status || 'Connected'}</p>
+                </div>
+              </div>
+            )}
             
             <div className="flex space-x-3">
               <button
@@ -788,9 +959,16 @@ const SettingsPage: React.FC = () => {
               <button
                 onClick={handleDisconnectStripe}
                 disabled={isDisconnecting}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+                className="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
               >
-                {isDisconnecting ? 'Disconnecting...' : 'Disconnect'}
+                {isDisconnecting ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Disconnecting...</span>
+                  </>
+                ) : (
+                  <span>Disconnect Account</span>
+                )}
               </button>
             </div>
           </div>
