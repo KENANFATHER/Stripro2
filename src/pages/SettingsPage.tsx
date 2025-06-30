@@ -24,10 +24,11 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { CreditCard, User, Bell, Shield, Save, Eye, EyeOff, CheckCircle, AlertTriangle, Key, TestTube } from 'lucide-react';
+import { CreditCard, User, Bell, Shield, Save, Eye, EyeOff, CheckCircle, AlertTriangle, Key, TestTube, Settings as SettingsIcon } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNotification } from '../contexts/NotificationContext';
 import { stripeService } from '../services/stripe';
+import { EmptyState, ErrorState, LoadingState } from '../components/UI';
 
 const SettingsPage: React.FC = () => {
   const { user } = useAuth();
@@ -739,6 +740,23 @@ const SettingsPage: React.FC = () => {
                     </ol>
                   </div>
                 </div>
+                
+                {/* Empty State for No Stripe Data */}
+                {!stripeConnectionStatus.isConnected && !stripeConfig.isConfigured && (
+                  <div className="mt-8 pt-6 border-t border-sage-200">
+                    <EmptyState
+                      title="No Stripe Data Available"
+                      description="Connect your Stripe account to see your client profitability data. Start by adding your API keys above."
+                      icon={SettingsIcon}
+                      variant="subtle"
+                      action={{
+                        label: "Learn More",
+                        onClick: () => window.open("https://stripe.com/docs/keys", "_blank")
+                      }}
+                      className="mx-auto my-8"
+                    />
+                  </div>
+                )}
               </div>
             )}
 

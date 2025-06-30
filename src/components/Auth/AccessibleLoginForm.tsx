@@ -22,11 +22,12 @@
  */
 
 import React, { useState, useEffect, useRef, Suspense, lazy } from 'react';
-import { Eye, EyeOff, AlertTriangle, CheckCircle, Shield, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, AlertTriangle, CheckCircle, Shield, Loader2, Mail } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotification } from '../../contexts/NotificationContext';
 import { LoginCredentials, SignupCredentials } from '../../types';
 import GoogleSignInButton from './GoogleSignInButton';
+import { EmptyState } from '../UI';
 
 // Code Splitting: Lazy load success icon
 const CheckCircleIcon = lazy(() => import('lucide-react').then(module => ({ default: module.CheckCircle })));
@@ -402,38 +403,21 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
       <main className="bg-white/95 backdrop-blur-sm rounded-2xl sm:rounded-3xl border border-white/30 shadow-2xl">
         {signupSuccessMessage ? (
           /* Email Verification Success Screen */
-          <div className="p-4 sm:p-6 lg:p-8 flex flex-col items-center justify-center text-center">
-            <Suspense fallback={<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center" />}>
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                <CheckCircleIcon className="w-8 h-8 text-green-600" />
-              </div>
-            </Suspense>
-            
-            <h2 className="text-xl sm:text-2xl font-bold text-sage-900 mb-3">
-              Check Your Email
-            </h2>
-            
-            <p className="text-sage-700 mb-4 max-w-sm">
-              {signupSuccessMessage}
-            </p>
-            
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-6 max-w-sm">
-              <p className="text-sm text-blue-800">
-                <strong>Tip:</strong> If you don't see the email in your inbox, please check your spam or junk folder.
-              </p>
-            </div>
-            
-            <button
-              onClick={() => {
+          <EmptyState
+            title="Check Your Email"
+            description={signupSuccessMessage}
+            icon={Mail}
+            action={{
+              label: "Back to Sign In",
+              onClick: () => {
                 setIsLogin(true);
                 setSignupSuccessMessage(null);
                 setLoginData(prev => ({ ...prev, email: signupData.email }));
-              }}
-              className="flex items-center space-x-2 px-4 py-2 bg-gradient-coral text-white rounded-lg font-semibold hover:shadow-lg focus:ring-2 focus:ring-coral-500 focus:ring-offset-2 transition-all duration-200"
-            >
-              <span>Back to Sign In</span>
-            </button>
-          </div>
+              }
+            }}
+            size="large"
+            className="p-8"
+          />
         ) : (
           /* Regular Login/Signup Form */
           <div className="p-4 sm:p-5 lg:p-6">

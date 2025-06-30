@@ -29,7 +29,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Menu } from 'lucide-react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { NotificationProvider } from './contexts/NotificationContext';
-import { Sidebar, NotificationContainer, BoltBadge } from './components';
+import { Sidebar, NotificationContainer, BoltBadge, ErrorBoundary } from './components';
 import {
   LandingPage,
   AuthCallbackPage,
@@ -85,17 +85,19 @@ const AppContent: React.FC = () => {
               
               {/* Page Content with Routing */}
               <div className="min-h-screen">
-                <Routes>
-                  <Route path="/" element={<Navigate to="/dashboard" replace />} />
-                  <Route path="/dashboard" element={<DashboardPage />} />
-                  <Route path="/clients" element={<ClientsPage />} />
-                  <Route path="/add-data" element={<AddDataPage />} />
-                  <Route path="/settings" element={<SettingsPage />} />
-                  {process.env.NODE_ENV !== 'production' && (
-                    <Route path="/stripe-test" element={<StripeTestPage />} />
-                  )}
-                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
-                </Routes>
+                <ErrorBoundary>
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                    <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/clients" element={<ClientsPage />} />
+                    <Route path="/add-data" element={<AddDataPage />} />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    {process.env.NODE_ENV !== 'production' && (
+                      <Route path="/stripe-test" element={<StripeTestPage />} />
+                    )}
+                    <Route path="*" element={<Navigate to="/dashboard" replace />} />
+                  </Routes>
+                </ErrorBoundary>
               </div>
             </main>
           </div>
