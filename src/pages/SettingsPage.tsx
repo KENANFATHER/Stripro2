@@ -36,10 +36,6 @@ const SettingsPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [isTestingStripe, setIsTestingStripe] = useState(false);
-  const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
-  const [isDisconnecting, setIsDisconnecting] = useState(false);
-  const [showDataDeletionDialog, setShowDataDeletionDialog] = useState(false);
-  const [dataDeletionReason, setDataDeletionReason] = useState('');
 
   // Profile data state
   const [profileData, setProfileData] = useState({
@@ -654,6 +650,20 @@ const SettingsPage: React.FC = () => {
                       Manage API Keys
                     </button>
                   </div>
+                  
+                  <div className="border border-red-200 rounded-xl p-6 bg-red-50">
+                    <h4 className="font-medium text-red-900 mb-2">Data Deletion</h4>
+                    <p className="text-sm text-red-700 mb-4">
+                      Request complete deletion of your personal data in compliance with GDPR. 
+                      This action cannot be undone.
+                    </p>
+                    <button 
+                      onClick={() => setShowDataDeletionDialog(true)}
+                      className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors"
+                    >
+                      Request Data Deletion
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
@@ -684,6 +694,49 @@ const SettingsPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Stripe Disconnect Confirmation Dialog */}
+      {showDisconnectDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <CreditCard className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-sage-900">Disconnect Stripe Account</h3>
+                <p className="text-sm text-sage-600">This action will remove your Stripe integration</p>
+              </div>
+            </div>
+            
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <h4 className="font-medium text-yellow-800 mb-2">What happens when you disconnect:</h4>
+              <ul className="text-sm text-yellow-700 space-y-1">
+                <li>• Your Stripe account will be deauthorized from our platform</li>
+                <li>• All stored Stripe data will be removed from your account</li>
+                <li>• You'll need to reconnect to access Stripe features again</li>
+                <li>• Your Stripe account itself will remain unchanged</li>
+              </ul>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDisconnectDialog(false)}
+                disabled={isDisconnecting}
+                className="flex-1 px-4 py-2 border border-sage-300 text-sage-700 rounded-lg hover:bg-sage-50 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDisconnectStripe}
+                disabled={isDisconnecting}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {isDisconnecting ? 'Disconnecting...' : 'Disconnect'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Support Information */}
       <div className="mt-8 pt-6 border-t border-sage-200 max-w-4xl">
         <h4 className="text-lg font-semibold text-sage-900 mb-4">Need Help?</h4>
@@ -700,10 +753,87 @@ const SettingsPage: React.FC = () => {
           <p className="text-blue-700 text-sm mt-2">
             We typically respond within 24 hours during business days.
           </p>
+          <p className="text-blue-700 text-sm mt-2">
+            For data protection inquiries, contact our DPO at{' '}
+            <a href="mailto:dpo@stripro.com" className="underline hover:no-underline">
+              dpo@stripro.com
+            </a>
+          </p>
         </div>
       </div>
     </div>
   );
 };
 
+      {/* GDPR Data Deletion Dialog */}
+      {showDataDeletionDialog && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl p-6 max-w-lg w-full">
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <Shield className="w-6 h-6 text-red-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-sage-900">Request Data Deletion</h3>
+                <p className="text-sm text-sage-600">GDPR-compliant data deletion request</p>
+              </div>
+            </div>
+            
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+              <h4 className="font-medium text-red-800 mb-2">⚠️ Important Information:</h4>
+              <ul className="text-sm text-red-700 space-y-1">
+                <li>• This will permanently delete ALL your personal data</li>
+                <li>• Your Stripe payment data will be redacted according to GDPR</li>
+                <li>• This action cannot be undone</li>
+                <li>• Processing may take up to 30 days</li>
+                <li>• You will receive confirmation via email</li>
+              </ul>
+            </div>
+            
+            <div className="mb-6">
+              <label htmlFor="deletionReason" className="block text-sm font-medium text-sage-700 mb-2">
+                Reason for deletion (optional)
+              </label>
+              <textarea
+                id="deletionReason"
+                value={dataDeletionReason}
+                onChange={(e) => setDataDeletionReason(e.target.value)}
+                rows={3}
+                className="w-full px-3 py-2 border border-sage-300 rounded-lg focus:ring-2 focus:ring-coral-500 focus:border-transparent transition-colors resize-none"
+                placeholder="Please let us know why you're requesting data deletion..."
+              />
+            </div>
+            
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+              <p className="text-sm text-blue-800">
+                <strong>Need help?</strong> Contact our Data Protection Officer at{' '}
+                <a href="mailto:dpo@stripro.com" className="underline hover:no-underline">
+                  dpo@stripro.com
+                </a>{' '}
+                if you have questions about this process.
+              </p>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button
+                onClick={() => {
+                  setShowDataDeletionDialog(false);
+                  setDataDeletionReason('');
+                }}
+                disabled={isSaving}
+                className="flex-1 px-4 py-2 border border-sage-300 text-sage-700 rounded-lg hover:bg-sage-50 disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRequestDataDeletion}
+                disabled={isSaving}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
+              >
+                {isSaving ? 'Submitting...' : 'Submit Request'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 export default SettingsPage;
