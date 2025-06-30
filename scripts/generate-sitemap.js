@@ -79,9 +79,6 @@ async function generateDynamicRoutes() {
   const dynamicRoutes = [];
   
   try {
-    // TODO: Replace with actual database query when implementing client detail pages
-    // Example of how you might fetch client IDs from Supabase:
-    /*
     import { createClient } from '@supabase/supabase-js';
     const supabase = createClient(
       process.env.VITE_SUPABASE_URL,
@@ -103,19 +100,6 @@ async function generateDynamicRoutes() {
         });
       });
     }
-    */
-    
-    // For now, we'll add some example dynamic routes
-    // Remove this when implementing real client detail pages
-    const exampleClientIds = ['cus_example1', 'cus_example2', 'cus_example3'];
-    exampleClientIds.forEach(clientId => {
-      dynamicRoutes.push({
-        url: `/clients/${clientId}`,
-        changefreq: 'weekly',
-        priority: 0.5,
-        lastmod: new Date().toISOString()
-      });
-    });
     
     console.log(`Generated ${dynamicRoutes.length} dynamic routes`);
     

@@ -104,25 +104,16 @@ export class GraphQLClient {
    */
   async query<T>(query: string, config: QueryConfig = {}): Promise<T> {
     try {
-      // TODO: Replace this mock implementation with real GraphQL request
-      // const response = await fetch(this.endpoint, {
-      //   method: 'POST',
-      //   headers: { ...this.defaultHeaders, ...config.headers },
-      //   body: JSON.stringify({ query, variables: config.variables })
-      // });
-      // const result: GraphQLResponse<T> = await response.json();
-      // if (result.errors) {
-      //   throw new Error(result.errors[0].message);
-      // }
-      // return result.data!;
-
-      // MOCK IMPLEMENTATION - Remove this when implementing real GraphQL
-      console.log('[MOCK] GraphQLClient.query called with query:', query, 'config:', config);
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { ...this.defaultHeaders, ...config.headers },
+        body: JSON.stringify({ query, variables: config.variables })
+      });
+      const result: GraphQLResponse<T> = await response.json();
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
+      }
       
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-
-      // Check cache first
       if (config.cache) {
         const cacheKey = this.getCacheKey(query, config.variables);
         const cached = this.getFromCache(cacheKey);
@@ -131,77 +122,13 @@ export class GraphQLClient {
         }
       }
 
-      // Mock GraphQL response based on query
-      let mockData: any;
-
-      if (query.includes('users')) {
-        mockData = {
-          users: [
-            {
-              id: '1',
-              name: 'John Doe',
-              email: 'john@example.com',
-              role: 'admin',
-              createdAt: '2024-01-15T10:00:00Z'
-            },
-            {
-              id: '2',
-              name: 'Jane Smith',
-              email: 'jane@example.com',
-              role: 'user',
-              createdAt: '2024-01-18T15:30:00Z'
-            }
-          ]
-        };
-      } else if (query.includes('clients')) {
-        mockData = {
-          clients: [
-            {
-              id: '1',
-              name: 'Acme Corporation',
-              email: 'billing@acme.com',
-              totalRevenue: 125670.50,
-              status: 'active'
-            },
-            {
-              id: '2',
-              name: 'TechStart Solutions',
-              email: 'payments@techstart.io',
-              totalRevenue: 48420.00,
-              status: 'active'
-            }
-          ]
-        };
-      } else if (query.includes('transactions')) {
-        mockData = {
-          transactions: [
-            {
-              id: '1',
-              amount: 4999.99,
-              status: 'completed',
-              clientId: '1',
-              createdAt: '2024-01-20T15:30:00Z'
-            },
-            {
-              id: '2',
-              amount: 1299.00,
-              status: 'completed',
-              clientId: '2',
-              createdAt: '2024-01-19T11:45:00Z'
-            }
-          ]
-        };
-      } else {
-        mockData = { message: 'Mock GraphQL response' };
-      }
-
       // Cache the result if caching is enabled
       if (config.cache) {
         const cacheKey = this.getCacheKey(query, config.variables);
-        this.setCache(cacheKey, mockData);
+        this.setCache(cacheKey, result.data);
       }
 
-      return mockData as T;
+      return result.data!;
 
     } catch (error) {
       console.error('GraphQL query error:', error);
@@ -224,78 +151,20 @@ export class GraphQLClient {
    */
   async mutate<T>(mutation: string, config: QueryConfig = {}): Promise<T> {
     try {
-      // TODO: Replace this mock implementation with real GraphQL request
-      // const response = await fetch(this.endpoint, {
-      //   method: 'POST',
-      //   headers: { ...this.defaultHeaders, ...config.headers },
-      //   body: JSON.stringify({ query: mutation, variables: config.variables })
-      // });
-      // const result: GraphQLResponse<T> = await response.json();
-      // if (result.errors) {
-      //   throw new Error(result.errors[0].message);
-      // }
-      // return result.data!;
-
-      // MOCK IMPLEMENTATION
-      console.log('[MOCK] GraphQLClient.mutate called with mutation:', mutation, 'config:', config);
-      
-      // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-
-      // Mock mutation response based on mutation type
-      let mockData: any;
-
-      if (mutation.includes('createUser')) {
-        mockData = {
-          createUser: {
-            id: Math.random().toString(36).substr(2, 9),
-            name: config.variables?.name || 'New User',
-            email: config.variables?.email || 'new@example.com',
-            role: config.variables?.role || 'user',
-            createdAt: new Date().toISOString()
-          }
-        };
-      } else if (mutation.includes('updateUser')) {
-        mockData = {
-          updateUser: {
-            id: config.variables?.id || '1',
-            name: config.variables?.name || 'Updated User',
-            email: config.variables?.email || 'updated@example.com',
-            updatedAt: new Date().toISOString()
-          }
-        };
-      } else if (mutation.includes('createClient')) {
-        mockData = {
-          createClient: {
-            id: Math.random().toString(36).substr(2, 9),
-            name: config.variables?.name || 'New Client',
-            email: config.variables?.email || 'new@client.com',
-            status: 'active',
-            createdAt: new Date().toISOString()
-          }
-        };
-      } else if (mutation.includes('createTransaction')) {
-        const amount = config.variables?.amount || 1000;
-        const stripeFee = (amount * 0.029) + 0.30;
-        
-        mockData = {
-          createTransaction: {
-            id: Math.random().toString(36).substr(2, 9),
-            amount: amount,
-            stripeFee: stripeFee,
-            netAmount: amount - stripeFee,
-            status: 'pending',
-            createdAt: new Date().toISOString()
-          }
-        };
-      } else {
-        mockData = { success: true, message: 'Mock mutation completed' };
+      const response = await fetch(this.endpoint, {
+        method: 'POST',
+        headers: { ...this.defaultHeaders, ...config.headers },
+        body: JSON.stringify({ query: mutation, variables: config.variables })
+      });
+      const result: GraphQLResponse<T> = await response.json();
+      if (result.errors) {
+        throw new Error(result.errors[0].message);
       }
 
       // Clear relevant cache entries after mutation
       this.invalidateCache(mutation);
 
-      return mockData as T;
+      return result.data!;
 
     } catch (error) {
       console.error('GraphQL mutation error:', error);
@@ -317,64 +186,33 @@ export class GraphQLClient {
    * 4. Implement reconnection logic
    */
   subscribe(subscription: string, config: SubscriptionConfig = {}): string {
-    // TODO: Replace this mock implementation with real WebSocket subscription
-    // const wsUrl = this.endpoint.replace('http', 'ws');
-    // const ws = new WebSocket(wsUrl, 'graphql-ws');
-    // ws.onopen = () => {
-    //   ws.send(JSON.stringify({
-    //     type: 'start',
-    //     payload: { query: subscription, variables: config.variables }
-    //   }));
-    // };
-    // ws.onmessage = (event) => {
-    //   const message = JSON.parse(event.data);
-    //   if (message.type === 'data') {
-    //     config.onData?.(message.payload);
-    //   }
-    // };
-
-    // MOCK IMPLEMENTATION
-    console.log('[MOCK] GraphQLClient.subscribe called with subscription:', subscription, 'config:', config);
-    
+    const wsUrl = this.endpoint.replace('http', 'ws');
+    const ws = new WebSocket(wsUrl, 'graphql-ws');
     const subscriptionId = Math.random().toString(36).substr(2, 9);
     
-    // Simulate subscription data
-    const interval = setInterval(() => {
-      let mockData: any;
-      
-      if (subscription.includes('transactionUpdates')) {
-        mockData = {
-          transactionUpdates: {
-            id: Math.random().toString(36).substr(2, 9),
-            status: ['pending', 'completed', 'failed'][Math.floor(Math.random() * 3)],
-            amount: Math.floor(Math.random() * 10000) + 100,
-            timestamp: new Date().toISOString()
-          }
-        };
-      } else if (subscription.includes('clientUpdates')) {
-        mockData = {
-          clientUpdates: {
-            id: Math.random().toString(36).substr(2, 9),
-            name: `Client ${Math.floor(Math.random() * 1000)}`,
-            totalRevenue: Math.floor(Math.random() * 100000),
-            timestamp: new Date().toISOString()
-          }
-        };
-      } else {
-        mockData = {
-          data: { message: 'Mock subscription update', timestamp: new Date().toISOString() }
-        };
-      }
-      
-      config.onData?.(mockData);
-    }, 5000); // Send update every 5 seconds
-
-    // Store subscription for cleanup
-    const mockWs = {
-      close: () => clearInterval(interval)
-    } as WebSocket;
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        type: 'start',
+        payload: { query: subscription, variables: config.variables }
+      }));
+    };
     
-    this.subscriptions.set(subscriptionId, mockWs);
+    ws.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      if (message.type === 'data') {
+        config.onData?.(message.payload);
+      }
+    };
+    
+    ws.onerror = (error) => {
+      config.onError?.(new Error(`WebSocket error: ${error}`));
+    };
+    
+    ws.onclose = () => {
+      config.onComplete?.();
+    };
+    
+    this.subscriptions.set(subscriptionId, ws);
     
     return subscriptionId;
   }

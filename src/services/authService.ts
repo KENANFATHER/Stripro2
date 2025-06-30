@@ -32,28 +32,9 @@ class AuthService {
    */
   async login(credentials: LoginCredentials): Promise<{ user: User; token: string }> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post<{ user: User; token: string }>('/auth/login', credentials);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser: User = {
-        id: '1',
-        email: credentials.email,
-        name: 'John Doe',
-        stripeConnected: true
-      };
-
-      const mockToken = 'mock-jwt-token-' + Date.now();
-
-      // Store token in API client
-      apiClient.setAuthToken(mockToken);
-      
-      return {
-        user: mockUser,
-        token: mockToken
-      };
+      const response = await apiClient.post<{ user: User; token: string }>('/auth/login', credentials);
+      apiClient.setAuthToken(response.token);
+      return response;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -64,28 +45,9 @@ class AuthService {
    */
   async signup(credentials: SignupCredentials): Promise<{ user: User; token: string }> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post<{ user: User; token: string }>('/auth/signup', credentials);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      const mockUser: User = {
-        id: '1',
-        email: credentials.email,
-        name: credentials.name,
-        stripeConnected: false
-      };
-
-      const mockToken = 'mock-jwt-token-' + Date.now();
-
-      // Store token in API client
-      apiClient.setAuthToken(mockToken);
-      
-      return {
-        user: mockUser,
-        token: mockToken
-      };
+      const response = await apiClient.post<{ user: User; token: string }>('/auth/signup', credentials);
+      apiClient.setAuthToken(response.token);
+      return response;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -96,13 +58,8 @@ class AuthService {
    */
   async logout(): Promise<void> {
     try {
-      // TODO: Replace with actual API call
-      // await apiClient.post('/auth/logout');
-      
-      // Clear token from API client
+      await apiClient.post('/auth/logout');
       apiClient.clearAuthToken();
-      
-      // Clear token from localStorage
       localStorage.removeItem('auth_token');
     } catch (error) {
       // Even if logout fails on server, clear local data
@@ -117,18 +74,8 @@ class AuthService {
    */
   async getCurrentUser(): Promise<User> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.get<User>('/auth/me');
-      
-      // Mock implementation
-      const mockUser: User = {
-        id: '1',
-        email: 'john@example.com',
-        name: 'John Doe',
-        stripeConnected: true
-      };
-      
-      return mockUser;
+      const user = await apiClient.get<User>('/auth/me');
+      return user;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -139,19 +86,7 @@ class AuthService {
    */
   async updateProfile(userData: Partial<User>): Promise<User> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.put<User>('/auth/profile', userData);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const updatedUser: User = {
-        id: '1',
-        email: userData.email || 'john@example.com',
-        name: userData.name || 'John Doe',
-        stripeConnected: userData.stripeConnected || false
-      };
-      
+      const updatedUser = await apiClient.put<User>('/auth/profile', userData);
       return updatedUser;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -163,11 +98,7 @@ class AuthService {
    */
   async requestPasswordReset(email: string): Promise<void> {
     try {
-      // TODO: Replace with actual API call
-      // await apiClient.post('/auth/password-reset', { email });
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await apiClient.post('/auth/password-reset', { email });
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -178,11 +109,8 @@ class AuthService {
    */
   async validateToken(token: string): Promise<boolean> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post<{ valid: boolean }>('/auth/validate', { token });
-      
-      // Mock implementation
-      return token.startsWith('mock-jwt-token-');
+      const response = await apiClient.post<{ valid: boolean }>('/auth/validate', { token });
+      return response.valid;
     } catch (error) {
       return false;
     }

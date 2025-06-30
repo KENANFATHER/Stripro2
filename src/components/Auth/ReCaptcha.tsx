@@ -58,25 +58,15 @@ const ReCaptcha: React.FC<ReCaptchaProps> = ({
     setError(null);
 
     try {
-      // Simulate network delay for reCAPTCHA verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // This would be replaced with actual reCAPTCHA implementation
+      const recaptchaToken = await window.grecaptcha.execute();
+      setIsVerified(true);
+      onVerify(recaptchaToken);
       
-      // Simulate random verification success/failure for demo
-      const isSuccess = Math.random() > 0.1; // 90% success rate
-      
-      if (isSuccess) {
-        const mockToken = `mock-recaptcha-token-${Date.now()}`;
-        setIsVerified(true);
-        onVerify(mockToken);
-        
-        // Set expiration timer (reCAPTCHA tokens typically expire after 2 minutes)
-        timeoutRef.current = setTimeout(() => {
-          handleExpiration();
-        }, 120000); // 2 minutes
-        
-      } else {
-        throw new Error('Verification failed. Please try again.');
-      }
+      // Set expiration timer (reCAPTCHA tokens typically expire after 2 minutes)
+      timeoutRef.current = setTimeout(() => {
+        handleExpiration();
+      }, 120000); // 2 minutes
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Verification failed');
       onVerify(null);

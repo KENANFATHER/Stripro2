@@ -220,7 +220,7 @@ const AccessibleLoginForm: React.FC<AccessibleLoginFormProps> = ({
 
     // Rate limiting check
     if (attemptCount >= 5) {
-      const errorMsg = 'Too many attempts. Please wait before trying again.';
+      const errorMsg = 'Too many login attempts. Please wait 15 minutes before trying again.';
       setFormError(errorMsg);
       showNotification('error', 'Rate Limited', errorMsg);
       return;

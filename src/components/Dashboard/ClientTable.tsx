@@ -63,7 +63,7 @@ const ClientTable: React.FC<ClientTableProps> = ({ clients }) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   const SortIcon: React.FC<{ field: keyof Client }> = ({ field }) => {

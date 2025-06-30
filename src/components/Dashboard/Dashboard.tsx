@@ -85,8 +85,8 @@ const Dashboard: React.FC = () => {
   }, [fetchClients, fetchStats, user]);
 
   // Use fallback data if API fails
-  const displayClients = clients || (clientsError ? fallbackClients : []);
-  const displayStats = stats || (statsError ? fallbackDashboardStats : {
+  const displayClients = clients || [];
+  const displayStats = stats || {
     totalRevenue: 0,
     totalFees: 0,
     netProfit: 0,
@@ -94,13 +94,12 @@ const Dashboard: React.FC = () => {
     monthlyGrowth: 0,
     transactionCount: 0,
     averageTransactionValue: 0
-  });
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'
-    }).format(amount);
+    }).format(amount || 0);
   };
 
   return (

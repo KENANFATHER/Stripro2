@@ -26,65 +26,6 @@
 import { apiClient, handleApiError } from './apiUtils';
 import { Client, Transaction, DashboardStats } from '../types';
 
-// Mock data for development
-const mockClients: Client[] = [
-  {
-    id: '1',
-    name: 'Acme Corporation',
-    email: 'billing@acme.com',
-    totalRevenue: 25670.50,
-    stripeFees: 770.12,
-    netProfit: 24900.38,
-    transactionCount: 34,
-    lastTransaction: '2025-01-10',
-    status: 'active'
-  },
-  {
-    id: '2',
-    name: 'TechStart Solutions',
-    email: 'payments@techstart.io',
-    totalRevenue: 18420.00,
-    stripeFees: 533.58,
-    netProfit: 17886.42,
-    transactionCount: 28,
-    lastTransaction: '2025-01-09',
-    status: 'active'
-  },
-  {
-    id: '3',
-    name: 'Global Dynamics',
-    email: 'finance@globaldynamics.com',
-    totalRevenue: 32150.75,
-    stripeFees: 962.52,
-    netProfit: 31188.23,
-    transactionCount: 45,
-    lastTransaction: '2025-01-08',
-    status: 'active'
-  },
-  {
-    id: '4',
-    name: 'Creative Studio',
-    email: 'hello@creativestudio.design',
-    totalRevenue: 12890.25,
-    stripeFees: 374.62,
-    netProfit: 12515.63,
-    transactionCount: 19,
-    lastTransaction: '2025-01-05',
-    status: 'inactive'
-  },
-  {
-    id: '5',
-    name: 'DataFlow Inc',
-    email: 'accounting@dataflow.co',
-    totalRevenue: 41230.80,
-    stripeFees: 1198.69,
-    netProfit: 40032.11,
-    transactionCount: 67,
-    lastTransaction: '2025-01-11',
-    status: 'active'
-  }
-];
-
 class ClientService {
   /**
    * Fetch all clients with optional filtering
@@ -96,46 +37,8 @@ class ClientService {
     sortOrder?: 'asc' | 'desc';
   }): Promise<Client[]> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.get<Client[]>('/clients', { params: filters });
-      
-      // Mock implementation with filtering
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      let filteredClients = [...mockClients];
-      
-      if (filters?.status) {
-        filteredClients = filteredClients.filter(client => client.status === filters.status);
-      }
-      
-      if (filters?.search) {
-        const searchTerm = filters.search.toLowerCase();
-        filteredClients = filteredClients.filter(client =>
-          client.name.toLowerCase().includes(searchTerm) ||
-          client.email.toLowerCase().includes(searchTerm)
-        );
-      }
-      
-      if (filters?.sortBy) {
-        filteredClients.sort((a, b) => {
-          const aValue = a[filters.sortBy!];
-          const bValue = b[filters.sortBy!];
-          
-          if (typeof aValue === 'number' && typeof bValue === 'number') {
-            return filters.sortOrder === 'desc' ? bValue - aValue : aValue - bValue;
-          }
-          
-          if (typeof aValue === 'string' && typeof bValue === 'string') {
-            return filters.sortOrder === 'desc' 
-              ? bValue.localeCompare(aValue)
-              : aValue.localeCompare(bValue);
-          }
-          
-          return 0;
-        });
-      }
-      
-      return filteredClients;
+      const response = await apiClient.get<Client[]>('/clients', { params: filters });
+      return response;
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -146,17 +49,7 @@ class ClientService {
    */
   async getClient(id: string): Promise<Client> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.get<Client>(`/clients/${id}`);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const client = mockClients.find(c => c.id === id);
-      if (!client) {
-        throw new Error('Client not found');
-      }
-      
+      const client = await apiClient.get<Client>(`/clients/${id}`);
       return client;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -168,22 +61,7 @@ class ClientService {
    */
   async createClient(clientData: Omit<Client, 'id' | 'totalRevenue' | 'stripeFees' | 'netProfit' | 'transactionCount' | 'lastTransaction'>): Promise<Client> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.post<Client>('/clients', clientData);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const newClient: Client = {
-        ...clientData,
-        id: Math.random().toString(36).substr(2, 9),
-        totalRevenue: 0,
-        stripeFees: 0,
-        netProfit: 0,
-        transactionCount: 0,
-        lastTransaction: new Date().toISOString().split('T')[0]
-      };
-      
+      const newClient = await apiClient.post<Client>('/clients', clientData);
       return newClient;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -195,23 +73,7 @@ class ClientService {
    */
   async updateClient(id: string, clientData: Partial<Client>): Promise<Client> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.put<Client>(`/clients/${id}`, clientData);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      const existingClient = mockClients.find(c => c.id === id);
-      if (!existingClient) {
-        throw new Error('Client not found');
-      }
-      
-      const updatedClient: Client = {
-        ...existingClient,
-        ...clientData,
-        id // Ensure ID doesn't change
-      };
-      
+      const updatedClient = await apiClient.put<Client>(`/clients/${id}`, clientData);
       return updatedClient;
     } catch (error) {
       throw new Error(handleApiError(error));
@@ -223,16 +85,7 @@ class ClientService {
    */
   async deleteClient(id: string): Promise<void> {
     try {
-      // TODO: Replace with actual API call
-      // await apiClient.delete(`/clients/${id}`);
-      
-      // Mock implementation
-      await new Promise(resolve => setTimeout(resolve, 300));
-      
-      const clientIndex = mockClients.findIndex(c => c.id === id);
-      if (clientIndex === -1) {
-        throw new Error('Client not found');
-      }
+      await apiClient.delete(`/clients/${id}`);
     } catch (error) {
       throw new Error(handleApiError(error));
     }
@@ -243,28 +96,7 @@ class ClientService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     try {
-      // TODO: Replace with actual API call
-      // const response = await apiClient.get<DashboardStats>('/dashboard/stats');
-      
-      // Mock implementation with calculated stats
-      await new Promise(resolve => setTimeout(resolve, 400));
-      
-      const totalRevenue = mockClients.reduce((sum, client) => sum + client.totalRevenue, 0);
-      const totalFees = mockClients.reduce((sum, client) => sum + client.stripeFees, 0);
-      const netProfit = totalRevenue - totalFees;
-      const activeClients = mockClients.filter(client => client.status === 'active').length;
-      const totalTransactions = mockClients.reduce((sum, client) => sum + client.transactionCount, 0);
-      
-      const stats: DashboardStats = {
-        totalRevenue,
-        totalFees,
-        netProfit,
-        activeClients,
-        monthlyGrowth: 12.5,
-        transactionCount: totalTransactions,
-        averageTransactionValue: totalRevenue / totalTransactions
-      };
-      
+      const stats = await apiClient.get<DashboardStats>('/dashboard/stats');
       return stats;
     } catch (error) {
       throw new Error(handleApiError(error));

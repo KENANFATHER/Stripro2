@@ -270,20 +270,13 @@ export class StripeService {
         throw new Error('Stripe not configured. Please add your API keys in Settings.');
       }
 
-      // This would typically call your backend API
-      // For now, we'll return a mock client secret
-      
-      // TODO: Replace with actual backend API call
-      // const response = await fetch('/api/stripe/create-payment-intent', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ amount, currency, metadata })
-      // });
-      // const { client_secret } = await response.json();
-      // return client_secret;
-
-      console.log('Mock payment intent creation:', { amount, currency, metadata });
-      return `pi_mock_${Date.now()}_secret_mock`;
+      const response = await fetch('/api/stripe/create-payment-intent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, currency, metadata })
+      });
+      const { client_secret } = await response.json();
+      return client_secret;
 
     } catch (error) {
       console.error('Failed to create payment intent:', error);
@@ -424,30 +417,13 @@ export class StripeService {
     error?: string;
   }> {
     try {
-      // This would typically call your backend API to check account status
-      // For now, we'll return a mock response
-      
-      // TODO: Replace with actual backend API call
-      // const response = await fetch('/api/stripe/account-status', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({ accountId })
-      // });
-      // const statusData = await response.json();
-      // return statusData;
-
-      console.log('Mock account status check for:', accountId);
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      return {
-        isActive: true,
-        chargesEnabled: true,
-        payoutsEnabled: true,
-        email: 'user@example.com',
-        country: 'US'
-      };
+      const response = await fetch('/api/stripe/account-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accountId })
+      });
+      const statusData = await response.json();
+      return statusData;
 
     } catch (error) {
       return {

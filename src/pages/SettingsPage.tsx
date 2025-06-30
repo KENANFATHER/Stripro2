@@ -241,8 +241,11 @@ const SettingsPage: React.FC = () => {
         throw new Error('Password must be at least 8 characters long');
       }
 
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Real API call to change password
+      await apiClient.post('/auth/change-password', {
+        currentPassword: passwordData.currentPassword,
+        newPassword: passwordData.newPassword
+      });
       
       showNotification('success', 'Password Updated', 'Your password has been changed successfully.');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
